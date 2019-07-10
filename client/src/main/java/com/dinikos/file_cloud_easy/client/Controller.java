@@ -173,8 +173,9 @@ public class Controller implements Initializable {
             lc.id = 100;
             lc.backController = this;
 
-            stage.setTitle("JavaFX Autorization");
-            stage.setScene(new Scene(root, 400, 200));
+            stage.setTitle("Autorization");
+            stage.setScene(new Scene(root, 200, 200));
+            stage.setResizable(false);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
         } catch (IOException e) {
