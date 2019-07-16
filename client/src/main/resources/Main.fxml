@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<StackPane fx:id="mainStackPane" prefHeight="600" prefWidth="800" style="-fx-background-color: transparent;"
+           xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.112-ea"
+           fx:controller="com.dinikos.file_cloud_easy.client.Controller">
+
+
+<!--<VBox fx:controller="com.dinikos.file_cloud_easy.client.Controller"-->
+      <!--xmlns:fx="http://javafx.com/fxml" alignment="center">-->
+    <!--<TextArea fx:id="textArea" VBox.vgrow="ALWAYS" editable="false"/>-->
+    <!--<HBox>-->
+        <!--<TextField fx:id="textField" onAction="#sendMessage" HBox.hgrow="ALWAYS" promptText="Введите тут сообщение..."/>-->
+        <!--<Button text="Click Me!" onAction="#sendMessage"/>-->
+    <!--</HBox>-->
+<!--</VBox>-->
+
+    <VBox fx:id="mainVBox" style="-fx-background-color: #eee; -fx-background-radius: 20; -fx-border-radius: 20;">
+        <HBox>
+
+            <Label fx:id="labelDragWindow" alignment="CENTER" maxWidth="Infinity" minHeight="36" prefHeight="36"
+                   style="-fx-background-color: linear-gradient(#3a7cef 0, #0f0de2 38%, #5240f0 60%, #c9d1ff 86%, #3A7CEF 100%);
+                   -fx-border-radius: 20 0 0 0; -fx-background-radius: 20 0 0 0; -fx-text-fill: #fff;"
+                   text="File_cloud_easy" HBox.hgrow="ALWAYS">
+                <font>
+                    <Font name="Arial Bold" size="16.0"/>
+                </font>
+            </Label>
+            <Button maxHeight="Infinity" onAction="#btnExit"
+                    style="-fx-background-color: linear-gradient(#3a7cef 0, #0f0de2 38%, #5240f0 60%, #c9d1ff 86%, #3A7CEF 100%);
+                     -fx-border-radius: 0 20 0 0; -fx-background-radius: 0 20 0 0; -fx-text-fill: #fff;"
+                    text="[X] CLOSE"/>
+        </HBox>
+
+        <HBox>
+            <TextField fx:id="tfFileName" focusTraversable="false"
+                       promptText="Укажите имя файла на сервере, который хотите скачать" HBox.hgrow="ALWAYS" />
+            <Button onAction="#pressOnDownloadBtn" text="Скачать" />
+        </HBox>
+
+        <ListView fx:id="customCellListView"/>
+        <TableView fx:id="personsTable"/>
+        <HBox>
+            <ListView fx:id="simpleListView"/>
+            <Button fx:id="btnShowSelectedElement" onAction="#printSelectedItemInListView" text="Напечатать выбранный элемент списка" />
+            <Button onAction="#changeBindedBoolean" text="Вкл/выкл 'Напечатать выбранный элемент списка'" />
+        </HBox>
+
+        <Label fx:id="filesDragAndDrop" alignment="CENTER" prefHeight="300" prefWidth="400"
+               style="-fx-background-color: #fff" text="Drop files here!" wrapText="true"/>
+        <HBox alignment="CENTER">
+            <Button onAction="#btnUpFile" text="Upload file">
+                <HBox.margin>
+                    <Insets right="5.0"/>
+                </HBox.margin>
+            </Button>
+
+
+            <Button onAction="#btnShowAlert" text="Show Alert">
+                <HBox.margin>
+                    <Insets right="5.0"/>
+                </HBox.margin>
+            </Button>
+            <Button onAction="#btnShowModal" text="Show Modal">
+                <HBox.margin>
+                    <Insets right="5.0"/>
+                </HBox.margin>
+            </Button>
+            <Button onAction="#btnShow2SceneStage" text="Show 2 Scene Stage">
+                <HBox.margin>
+                    <Insets right="5.0"/>
+                </HBox.margin>
+            </Button>
+        </HBox>
+    </VBox>
+    <!--</StackPane>-->
+
+
+</StackPane>
