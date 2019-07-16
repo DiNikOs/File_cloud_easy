@@ -19,14 +19,12 @@ public class Main extends Application {
         Parent root = fxmlLoader.load();
         Controller controller = fxmlLoader.getController();
         System.out.println(controller);
-       // Parent root = FXMLLoader.load(getClass().getResource("/Main.fxml"));
         primaryStage.initStyle(StageStyle.TRANSPARENT);
         primaryStage.setTitle("File cloud easy Client");
         primaryStage.setResizable(false);
         Scene scene = new Scene(root, 600, 600);
         scene.setFill(Color.TRANSPARENT);
         primaryStage.setScene(scene);
-        //primaryStage.setScene(new Scene(root, 400, 400));
         primaryStage.show();
     }
 

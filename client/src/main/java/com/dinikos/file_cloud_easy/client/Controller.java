@@ -1,10 +1,10 @@
 package com.dinikos.file_cloud_easy.client;
 
+import com.dinikos.file_cloud_easy.common.AbstractMessage;
+import com.dinikos.file_cloud_easy.common.FileMessage;
+import com.dinikos.file_cloud_easy.common.FileRequest;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -24,7 +24,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.util.Callback;
 
 import java.io.DataInputStream;
@@ -33,6 +32,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -53,6 +55,9 @@ public class Controller implements Initializable {
 //
 //    @FXML
 //    TextField textField;
+
+    @FXML
+    TextField tfFileName;
 //
 //    public void sendMessage() {
 //        textArea.appendText(textField.getText());
@@ -103,8 +108,65 @@ public class Controller implements Initializable {
         initializeDragAndDropLabel();
         initializeWindowDragAndDropLabel();
         initializeSceneStyle();
-        initializeSimpleListView();
+       // initializeSimpleListView();
         btnShowSelectedElement.disableProperty().bind(btnDisabled);
+
+        Network.start();
+        Thread t = new Thread(() -> {
+            try {
+                while (true) {
+                    AbstractMessage am = Network.readObject();
+                    if (am instanceof FileMessage) {
+                        FileMessage fm = (FileMessage) am;
+                        Files.write(Paths.get("client/client_storage/" + fm.getFilename()),
+                                fm.getData(), StandardOpenOption.CREATE);
+                        refreshLocalFilesList();
+                    }
+                }
+            } catch (ClassNotFoundException | IOException e) {
+                e.printStackTrace();
+            } finally {
+                Network.stop();
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        refreshLocalFilesList();
+    }
+
+    public void pressOnDownloadBtn(ActionEvent actionEvent) {
+        if (tfFileName.getLength() > 0) {
+            Network.sendMsg(new FileRequest(tfFileName.getText()));
+            tfFileName.clear();
+        }
+    }
+
+    public void btnUpFile(ActionEvent actionEvent) {
+       if (filesDragAndDrop!=null) {
+           new ClientHandler("Java" , filesDragAndDrop.getText());
+           System.out.println("dropText: " + filesDragAndDrop.getText());
+       }
+    }
+
+    public void refreshLocalFilesList() {
+        updateUI(() -> {
+            try {
+                simpleListView.getItems().clear();
+                Files.list(Paths.get("client/client_storage")).
+                        map(p -> p.getFileName().toString()).
+                        forEach(o -> simpleListView.getItems().add(o));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public static void updateUI(Runnable r) {
+        if (Platform.isFxApplicationThread()) {
+            r.run();
+        } else {
+            Platform.runLater(r);
+        }
     }
 
     // Показывает Alert с возможностью нажатия одной из двух кнопок
@@ -215,10 +277,6 @@ public class Controller implements Initializable {
                 mainStackPane.getChildren().get(0).setEffect(new DropShadow(15, Color.BLACK));
             }
         });
-    }
-
-    public void initializeSimpleListView() {
-        simpleListView.getItems().addAll("Java", "Core", "List", "View");
     }
 
     public void btnExit(ActionEvent actionEvent) {
