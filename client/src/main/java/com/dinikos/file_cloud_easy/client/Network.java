@@ -2,6 +2,7 @@ package com.dinikos.file_cloud_easy.client;
 
 //import com.flamexander.netty.example.common.AbstractMessage;
 import com.dinikos.file_cloud_easy.common.AbstractMessage;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
 import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
 
@@ -13,14 +14,17 @@ public class Network {
     private static ObjectEncoderOutputStream outMsg;
     private static ObjectDecoderInputStream inMsg;
 
+
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        System.out.println("Client connected...");
+    }
+
     public static void start() {
         try { //(Socket socket = new Socket("localhost", 8189))
             socket = new Socket("localhost", 8189);
             outMsg = new ObjectEncoderOutputStream(socket.getOutputStream());
-            outMsg.writeObject("/auth java");
-            outMsg.writeObject("Hello server");
            // outMsg.flush();
-            inMsg = new ObjectDecoderInputStream(socket.getInputStream(), 50 * 1024 * 1024);
+            inMsg = new ObjectDecoderInputStream(socket.getInputStream(), 100 * 1024 * 1024);
 
         } catch (IOException e) {
             e.printStackTrace();

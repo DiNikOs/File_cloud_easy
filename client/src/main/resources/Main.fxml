@@ -24,16 +24,6 @@
            xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.112-ea"
            fx:controller="com.dinikos.file_cloud_easy.client.Controller">
 
-
-<!--<VBox fx:controller="com.dinikos.file_cloud_easy.client.Controller"-->
-      <!--xmlns:fx="http://javafx.com/fxml" alignment="center">-->
-    <!--<TextArea fx:id="textArea" VBox.vgrow="ALWAYS" editable="false"/>-->
-    <!--<HBox>-->
-        <!--<TextField fx:id="textField" onAction="#sendMessage" HBox.hgrow="ALWAYS" promptText="Введите тут сообщение..."/>-->
-        <!--<Button text="Click Me!" onAction="#sendMessage"/>-->
-    <!--</HBox>-->
-<!--</VBox>-->
-
     <VBox fx:id="mainVBox" style="-fx-background-color: #eee; -fx-background-radius: 20; -fx-border-radius: 20;">
         <HBox>
 
@@ -60,9 +50,19 @@
         <ListView fx:id="customCellListView"/>
         <TableView fx:id="personsTable"/>
         <HBox>
-            <ListView fx:id="simpleListView"/>
-            <Button fx:id="btnShowSelectedElement" onAction="#printSelectedItemInListView" text="Напечатать выбранный элемент списка" />
-            <Button onAction="#changeBindedBoolean" text="Вкл/выкл 'Напечатать выбранный элемент списка'" />
+            <VBox>
+                <Label text="Client"></Label>
+                <ListView fx:id="simpleListView"/>
+            </VBox>
+           <VBox>
+               <Button maxWidth="Infinity" fx:id="btnShowSelectedElement" onAction="#printSelectedItemInListView" text="Upload file" />
+               <Button maxWidth="Infinity" fx:id="btnDelSelectedElement" onAction="#DelSelectedItemInListView" text="Delete file" />
+               <Button maxWidth="Infinity" onAction="#changeBindedBoolean" text="Вкл/выкл       " />
+           </VBox>
+            <VBox>
+                <Label text="Server"></Label>
+                <ListView fx:id="simpleListView2"/>
+            </VBox>
         </HBox>
 
         <Label fx:id="filesDragAndDrop" alignment="CENTER" prefHeight="300" prefWidth="400"

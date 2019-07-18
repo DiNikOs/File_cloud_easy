@@ -1,8 +1,7 @@
 package com.dinikos.file_cloud_easy.client;
 
-import com.dinikos.file_cloud_easy.common.AbstractMessage;
-import com.dinikos.file_cloud_easy.common.FileMessage;
-import com.dinikos.file_cloud_easy.common.FileRequest;
+import com.dinikos.file_cloud_easy.common.*;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
@@ -33,38 +32,22 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class Controller implements Initializable {
-     /*
-    TextInputDialog dialog = new TextInputDialog(file.getName());
-    dialog.setTitle("Загрузка файла");
-    dialog.setHeaderText("Загрузка файла");
-    dialog.setContentText("Укажите новое имя файла:");
-    Optional<String> result = dialog.showAndWait();
-    if (result.isPresent()) {
+public class Controller extends ChannelInboundHandlerAdapter implements Initializable {
 
-    FileChooser
-     */
-
-//    @FXML
-//    TextArea textArea;
-//
-//    @FXML
-//    TextField textField;
 
     @FXML
     TextField tfFileName;
 //
-//    public void sendMessage() {
-//        textArea.appendText(textField.getText());
-//        textArea.appendText("\n");
-//        textField.clear();
-//        textField.requestFocus();
-//    }
 
     @FXML
     ListView<Person> customCellListView;
@@ -72,6 +55,8 @@ public class Controller implements Initializable {
     @FXML
     ListView<String> simpleListView;
 
+    @FXML
+    ListView<String> simpleListView2;
     @FXML
     TableView<Person> personsTable;
 
@@ -86,6 +71,10 @@ public class Controller implements Initializable {
 
     @FXML
     Button btnShowSelectedElement;
+
+    @FXML
+    Button btnDelSelectedElement;
+
     SimpleBooleanProperty btnDisabled = new SimpleBooleanProperty(false);
 
     private boolean isAuthorized;
@@ -103,15 +92,21 @@ public class Controller implements Initializable {
     // Для работы этого метода необходимо чтобы контроллер реализовал интерфейс Initializable
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        initializePersonListView();
-        initializePersonTable();
+
         initializeDragAndDropLabel();
         initializeWindowDragAndDropLabel();
         initializeSceneStyle();
        // initializeSimpleListView();
         btnShowSelectedElement.disableProperty().bind(btnDisabled);
+        btnShowSelectedElement.setPrefWidth(50);
+        btnDelSelectedElement.setPrefWidth(50);
+
+       // String auth = "/auth Java";
 
         Network.start();
+      //
+//        outMsg.writeObject("/auth java");
+//        outMsg.writeObject("Hello server");
         Thread t = new Thread(() -> {
             try {
                 while (true) {
@@ -121,6 +116,17 @@ public class Controller implements Initializable {
                         Files.write(Paths.get("client/client_storage/" + fm.getFilename()),
                                 fm.getData(), StandardOpenOption.CREATE);
                         refreshLocalFilesList();
+                    }
+                    if (am instanceof FileList) {
+                        //TODO // transfer
+                       FileList fl = (FileList) am;
+                        System.out.println("Fl= " + fl);
+                        simpleListView2.getItems().clear();
+                        System.out.println("FlList= " + fl.getFileList());
+                        System.out.println("FlListSize= " + fl.getFileList().size());
+                        for (int i = 0; i < fl.getFileList().size(); i++) {
+                            simpleListView2.getItems().add(fl.get(i));
+                        }
                     }
                 }
             } catch (ClassNotFoundException | IOException e) {
@@ -138,23 +144,54 @@ public class Controller implements Initializable {
         if (tfFileName.getLength() > 0) {
             Network.sendMsg(new FileRequest(tfFileName.getText()));
             tfFileName.clear();
+            System.out.println("DownloadBtn");
         }
     }
 
     public void btnUpFile(ActionEvent actionEvent) {
-       if (filesDragAndDrop!=null) {
-           new ClientHandler("Java" , filesDragAndDrop.getText());
+        System.out.println("UpLoadBtn");
+        if (tfFileName.getLength() > 0) {
+            try {
+                Network.sendMsg(new FileMessage(Paths.get("client/client_storage/" + tfFileName.getText())));
+                filesDragAndDrop.setText("Drop files here!");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            tfFileName.clear();
+        }
+        if (!filesDragAndDrop.equals("Drop files here!")) {
+            try {
+                Network.sendMsg(new FileMessage(Paths.get(filesDragAndDrop.getText().trim())));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println("tranfer Obj OK ");
            System.out.println("dropText: " + filesDragAndDrop.getText());
        }
     }
-
+        //TODO // doto
     public void refreshLocalFilesList() {
         updateUI(() -> {
             try {
                 simpleListView.getItems().clear();
+               // simpleListView2.getItems().clear();
                 Files.list(Paths.get("client/client_storage")).
                         map(p -> p.getFileName().toString()).
                         forEach(o -> simpleListView.getItems().add(o));
+                Network.sendMsg(new Command("getServerList", ""));
+
+                for (int i = 0; i < simpleListView.getItems().size(); i++) {
+                    System.out.println(simpleListView.getItems().get(i));
+                }
+               // simpleListView.getSelectionModel().;
+                int lenList = simpleListView.getItems().size();
+                System.out.println("len list= " + lenList);
+//                for (int i = 0; i < lenList; i++) {
+//                    simpleListView2.getItems().add(simpleListView.getItems().get(i));
+//                }
+//                simpleListView2.add(simpleListView.get)
+//                simpleListView2.getItems().addAll(simpleListView);
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -182,26 +219,6 @@ public class Controller implements Initializable {
         }
     }
 
-    public void initializePersonListView() {
-        customCellListView.getItems().addAll(new Person("Alex", "Alex@gmail.com"), new Person("Bob", "Bob@gmail.com"));
-        customCellListView.setCellFactory(new Callback<ListView<Person>, ListCell<Person>>() {
-            @Override
-            public ListCell<Person> call(ListView<Person> studentListView) {
-                return new PersonListCell();
-            }
-        });
-    }
-
-    public void initializePersonTable() {
-        TableColumn<Person, String> tcName = new TableColumn<>("Name");
-        tcName.setCellValueFactory(new PropertyValueFactory<>("name"));
-
-        TableColumn<Person, String> tcEmail = new TableColumn<>("E-Mail");
-        tcEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
-
-        personsTable.getColumns().addAll(tcName, tcEmail);
-        personsTable.getItems().addAll(new Person("Alex", "Alex@gmail.com"), new Person("Bob", "Bob@gmail.com"));
-    }
 
     public void initializeDragAndDropLabel() {
         filesDragAndDrop.setOnDragOver(event -> {
@@ -297,7 +314,65 @@ public class Controller implements Initializable {
     }
 
     public void printSelectedItemInListView(ActionEvent actionEvent) {
-        System.out.println(simpleListView.getSelectionModel().getSelectedItem());
+
+        if (simpleListView.getSelectionModel().getSelectedItem()!=null) {
+            try {
+                Network.sendMsg(new FileMessage(Paths.get("client/client_storage/" + simpleListView.getSelectionModel().getSelectedItem())));
+                filesDragAndDrop.setText("Drop files here!");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println(simpleListView.getSelectionModel().getSelectedItem());
+        } else {
+            Alert alert = new Alert(Alert.AlertType.NONE, "Select the file to download.", ButtonType.OK);
+            // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get().getText().equals("OK")) {
+                System.out.println("You clicked OK");
+            }
+        }
+        // UpLoad from Server
+        if (simpleListView2.getSelectionModel().getSelectedItem()!=null) {
+            try {
+               // Network.sendMsg(new Command("Up",simpleListView2.getSelectionModel().getSelectedItem()));
+                Network.sendMsg(new FileMessage(Paths.get("client/client_storage/" + simpleListView2.getSelectionModel().getSelectedItem())));
+                filesDragAndDrop.setText("Drop files here!");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println(simpleListView.getSelectionModel().getSelectedItem());
+        } else {
+            Alert alert = new Alert(Alert.AlertType.NONE, "Select the file to download.", ButtonType.OK);
+            // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get().getText().equals("OK")) {
+                System.out.println("You clicked OK");
+            }
+        }
+
+
+
+    }
+
+    public void DelSelectedItemInListView(ActionEvent actionEvent) {
+
+        if (simpleListView.getSelectionModel().getSelectedItem()!=null) {
+            System.out.println("del tryth= " + simpleListView.getSelectionModel().getSelectedItem());
+            File file = new File("client/client_storage/" + simpleListView.getSelectionModel().getSelectedItem());
+            if( file.delete()){
+                System.out.println("client/client_storage/" + simpleListView.getSelectionModel().getSelectedItem() + " файл удален");
+            } else {
+                System.out.println("Файла" +  simpleListView.getSelectionModel().getSelectedItem() + " не обнаружен");
+            }
+            refreshLocalFilesList();
+        } else {
+            Alert alert = new Alert(Alert.AlertType.NONE, "Select the file to download.", ButtonType.OK);
+            // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get().getText().equals("OK")) {
+                System.out.println("You clicked OK");
+            }
+        }
     }
 
     public void changeBindedBoolean(ActionEvent actionEvent) {

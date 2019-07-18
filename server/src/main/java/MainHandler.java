@@ -1,7 +1,5 @@
 
-import com.dinikos.file_cloud_easy.common.AbstractMessage;
-import com.dinikos.file_cloud_easy.common.FileMessage;
-import com.dinikos.file_cloud_easy.common.FileRequest;
+import com.dinikos.file_cloud_easy.common.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -11,19 +9,27 @@ import io.netty.util.ReferenceCountUtil;
 import javafx.application.Platform;
 import javafx.scene.control.ListView;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class MainHandler extends ChannelInboundHandlerAdapter {
 
-    private String username = null;
-    ListView<String> filesList;
+    private String username;
+    //ListView<String> filesList;
+    List<String> filesList;
 
-    public MainHandler() {
-        this.username =  AuthHandler.getUsername();
+    public MainHandler() { // String username
+        this.username =  username;
+        System.out.println("MainHandler start");
     }
+
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -41,18 +47,35 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                     ctx.writeAndFlush(fm);
                     System.out.println("tranfer Obj OK " + fm);
                 }
+
             }
             if (msg instanceof FileMessage) {//
-                // Что делать если прилетел файл ??
-                ByteBuf in = (ByteBuf) msg;
-                try {
-                    while (in.isReadable()) {
-                        System.out.print((char) in.readByte());
-                    }
-                } finally {
-                    ReferenceCountUtil.release(msg);
+                FileMessage fm = (FileMessage) msg;
+                Files.write(Paths.get("server/server_storage/" + fm.getFilename()),
+                        fm.getData(), StandardOpenOption.CREATE);
+              //  refreshLocalFilesList();
+                refreshServerFilesList();
+                System.out.println("Obj OK " + fm);
                 }
+            if (msg instanceof Command) {
+                String cmd = ((Command) msg).getCommand();
+                refreshServerFilesList();
+                System.out.println("listLen= " + filesList.size());
+                if (cmd.equals("getServerList")){
+                    FileList fl = new FileList(filesList);
+
+                    ctx.writeAndFlush(fl);
+                    System.out.println("tranfer List OK " + fl);
                 }
+                if (cmd.equals("Del")){
+                    FileList fl = new FileList(filesList);
+
+                    ctx.writeAndFlush(fl);
+                    System.out.println("Del List OK " + fl);
+                }
+
+
+            }
 
             if (msg == null) {
                 return;
@@ -74,22 +97,29 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
         ctx.close();
     }
 
-//    public static AbstractMessage readObject() throws ClassNotFoundException, IOException {
-//        Object obj = inMsg.readObject();
-//        return (AbstractMessage) obj;
+//    public void refreshLocalFilesList() {
+//        updateUI(() -> {
+//            try {
+//                filesList.getItems().clear();
+//                Files.list(Paths.get("server/server_storage/")).
+//                        map(p -> p.getFileName().toString()).
+//                        forEach(o -> filesList.getItems().add(o));
+//                System.out.println("listLen= " + filesList.getItems().size());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        });
 //    }
 
-    public void refreshLocalFilesList() {
-        updateUI(() -> {
-            try {
-                filesList.getItems().clear();
-                Files.list(Paths.get("client_storage")).
-                        map(p -> p.getFileName().toString()).
-                        forEach(o -> filesList.getItems().add(o));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+    public void refreshServerFilesList() {
+
+        File dir = new File("server/server_storage/"); //path указывает на директорию
+        String[] arrFiles = dir.list();
+        filesList = Arrays.asList(arrFiles);
+        System.out.println("listLen= " + filesList.size());
+        for (String file : filesList) {
+            System.out.println(file);
+        }
     }
 
     public static void updateUI(Runnable r) {

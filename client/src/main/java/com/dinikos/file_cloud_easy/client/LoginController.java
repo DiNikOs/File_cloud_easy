@@ -1,5 +1,6 @@
 package com.dinikos.file_cloud_easy.client;
 
+import com.dinikos.file_cloud_easy.common.Command;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -70,17 +71,15 @@ public class LoginController {
             connect();
         }
 
-        try {
-            if  (login.getText().trim().isEmpty() || password.getText().trim().isEmpty()) {
-                out.writeUTF("/auth " + "null" + " " + "null");
-            } else {
-                out.writeUTF("/auth " + login.getText() + " " + password.getText());
-            }
-            login.clear();
-            password.clear();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if  (login.getText().trim().isEmpty() || password.getText().trim().isEmpty()) {
+           // out.writeUTF("/auth " + "null" + " " + "null");
+            Network.sendMsg(new Command("/auth null null", ""));
+        } else {
+            //out.writeUTF("/auth " + login.getText() + " " + password.getText());
+            Network.sendMsg(new Command("/auth ",  login.getText() + password.getText()));
         }
+        login.clear();
+        password.clear();
     }
 
     public void sign(ActionEvent actionEvent) {

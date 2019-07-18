@@ -23,8 +23,8 @@ public class Server {
                             socketChannel.pipeline().addLast(
                                     new ObjectDecoder(50 * 1024 * 1024, ClassResolvers.cacheDisabled(null)),
                                     new ObjectEncoder(),
-                                    new MainHandler(),
-                                    new AuthHandler()
+                                    new MainHandler()//,
+                                   // new AuthHandler()
                             );
                         }
                     })
