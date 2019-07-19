@@ -87,7 +87,10 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
     Socket socket;
     DataInputStream in;
     DataOutputStream out;
-    StringBuffer sb;
+    StringBuffer sb, sb2;
+    //StringBuffer sb2;
+    int initCount1, initCount2;
+
 
     final String IP_ADRESS = "localhost";
     final int PORT = 8189;
@@ -105,6 +108,8 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
         btnShowSelectedElement.setPrefWidth(50);
         btnDelSelectedElement.setPrefWidth(50);
         sb = new StringBuffer();
+        sb2 = new StringBuffer();
+        initCount1 = initCount2 = 0;
        // String auth = "/auth Java";
 
         Network.start();
@@ -150,24 +155,6 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
             Network.sendMsg(new FileRequest(tfFileName.getText()));
             tfFileName.clear();
             System.out.println("DownloadBtn");
-        }
-
-        String simplListClient2 = initializeFocus(simpleListView2);
-        System.out.println("select2 mode= " + simplListClient2);
-        if (simplListClient2!=null) {
-            // Network.sendMsg(new Command("Up",simpleListView2.getSelectionModel().getSelectedItem()));
-            System.out.println("get22= " + simplListClient2);
-            Network.sendMsg(new FileRequest(simplListClient2));
-            filesDragAndDrop.setText("Drop files here!");
-            System.out.println("transfer OK");
-        } // UpLoad from Server
-        else {
-            Alert alert = new Alert(Alert.AlertType.NONE, "Select the file to download from.", ButtonType.OK);
-            // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
-            Optional<ButtonType> result = alert.showAndWait();
-            if (result.get().getText().equals("OK")) {
-                System.out.println("You clicked OK");
-            }
         }
     }
 
@@ -216,9 +203,6 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
         updateUI(() -> {
             simpleListView2.getItems().clear();
             simpleListView2.getItems().addAll(f.getFileList());
-//            for (int i = 0; i < f.getFileList().size(); i++) {
-//                simpleListView2.getItems().add(f.get(i));
-//            }
         });
     }
 
@@ -242,7 +226,6 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
             System.out.println("You clicked Cancel");
         }
     }
-
 
     public void initializeDragAndDropLabel() {
         filesDragAndDrop.setOnDragOver(event -> {
@@ -332,12 +315,18 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
                 // selectedLbl.setText("Selected: " + newValue);
                 sb.setLength(0);
                 System.out.println("sb= " + sb);
+                System.out.println("count1= " + initCount1);
                 sb.append(oldValue);
+//                if (initCount1<2) {
+//                    initCount1++;
+//                    sb.append(oldValue);
+//                } else sb.append(newValue);
                 System.out.println("sb2= " + sb);
-                simpleList.getSelectionModel().getSelectedItem();
+                //simpleList.getSelectionModel().getSelectedItem();
 
             }
         });
+        if (sb.equals("")) return null;
         return sb.toString();
     }
 
@@ -351,15 +340,20 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
                 System.out.println("SelectedNew: " + newValue);
                 System.out.println("SelectedOld: " + oldValue);
                 // selectedLbl.setText("Selected: " + newValue);
-                sb.setLength(0);
-                System.out.println("sb= " + sb);
-                sb.append(newValue);
-                System.out.println("sb2= " + sb);
-                simpleList.getSelectionModel().getSelectedItem();
+                sb2.setLength(0);
+                System.out.println("sb= " + sb2);
+                System.out.println("count2= " + initCount2);
+                if (initCount2<2) {
+                    initCount2++;
+                    sb2.append(oldValue);
+                } else sb2.append(newValue);
+                System.out.println("sb2= " + sb2);
+                //simpleList.getSelectionModel().getSelectedItem();
 
             }
         });
-        return sb.toString();
+        if (sb2.equals("")) return null;
+        return sb2.toString();
     }
 
 
@@ -384,33 +378,45 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
         System.out.println("==BTN_UPLOAD==");
         System.out.println("action= " + actionEvent.toString());
 
-
-
-        String simplListClient = initializeFocus2(simpleListView);
+        String simplListClient = initializeFocus(simpleListView);
         System.out.println("select1 mode= " + simplListClient);
-
+        String simplListClient2 = initializeFocus2(simpleListView2);
+        System.out.println("select2 mode= " + simplListClient2);
 //TODO // download
-        if (simplListClient!=null) {
-
+        if (simplListClient!=null) { // simpleListView.getSelectionModel().getSelectedItem()!=null &
             System.out.println("init1= " + simplListClient);
             try {
-                //System.out.println("get12= " + simplListClient);
                 Network.sendMsg(new FileMessage(Paths.get("client/client_storage/" + simplListClient)));
                 //filesDragAndDrop.setText("Drop files here!");
             } catch (IOException e) {
                 e.printStackTrace();
             }
             System.out.println(simpleListView.getSelectionModel().getSelectedItem());
+           // return;
         }
-//        // UpLoad from Server
-        else {
-            Alert alert = new Alert(Alert.AlertType.NONE, "Select the file to download from.", ButtonType.OK);
-            // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
-            Optional<ButtonType> result = alert.showAndWait();
-            if (result.get().getText().equals("OK")) {
-                System.out.println("You clicked OK");
-            }
-        }
+//        else {
+//            Alert alert = new Alert(Alert.AlertType.NONE, "Select the file to download from.", ButtonType.OK);
+//            // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
+//            Optional<ButtonType> result = alert.showAndWait();
+//            if (result.get().getText().equals("OK")) {
+//                System.out.println("You clicked OK");
+//            }
+//        }
+        if (simplListClient2!=null) { // simpleListView2.getSelectionModel().getSelectedItem()!=null &
+            // Network.sendMsg(new Command("Up",simpleListView2.getSelectionModel().getSelectedItem()));
+            System.out.println("get22= " + simplListClient2);
+            Network.sendMsg(new FileRequest(simplListClient2));
+            //filesDragAndDrop.setText("Drop files here!");
+            System.out.println("transfer OK");
+        } // UpLoad from Server
+//        else {
+//        Alert alert = new Alert(Alert.AlertType.NONE, "Select the file to download from.", ButtonType.OK);
+//        // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
+//        Optional<ButtonType> result = alert.showAndWait();
+//        if (result.get().getText().equals("OK")) {
+//            System.out.println("You clicked OK");
+//        }
+    //}
         System.out.println("==BTN_UPLOAD_END==" + "\n");
     }
 
