@@ -49,8 +49,8 @@ import java.util.regex.Pattern;
 public class Controller extends ChannelInboundHandlerAdapter implements Initializable {
 
 
-    @FXML
-    TextField tfFileName;
+//    @FXML
+//    TextField tfFileName;
 //
 
     @FXML
@@ -142,7 +142,6 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
                     }
                     if (am instanceof FileList) {
                         FileList fl = (FileList) am;
-
                         //TODO // transfer
                         System.out.println("FlList= " + fl.getFileList());
                         System.out.println("FlListSize= " + fl.getFileList().size());
@@ -164,25 +163,25 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
         System.out.println("==INITIALIZE==");
     }
 
-    public void pressOnDownloadBtn(ActionEvent actionEvent) {
-        if (tfFileName.getLength() > 0) {
-            Network.sendMsg(new FileRequest(tfFileName.getText()));
-            tfFileName.clear();
-            System.out.println("DownloadBtn");
-        }
-    }
+//    public void pressOnDownloadBtn(ActionEvent actionEvent) {
+//        if (tfFileName.getLength() > 0) {
+//            Network.sendMsg(new FileRequest(tfFileName.getText()));
+//            tfFileName.clear();
+//            System.out.println("DownloadBtn");
+//        }
+//    }
 
     public void btnUpFile(ActionEvent actionEvent) {
         System.out.println("UpLoadBtn");
-        if (tfFileName.getLength() > 0) {
-            try {
-                Network.sendMsg(new FileMessage(Paths.get("client/client_storage/" + tfFileName.getText())));
-                filesDragAndDrop.setText("Drop files here!");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            tfFileName.clear();
-        }
+//        if (tfFileName.getLength() > 0) {
+//            try {
+//                Network.sendMsg(new FileMessage(Paths.get("client/client_storage/" + tfFileName.getText())));
+//                filesDragAndDrop.setText("Drop files here!");
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            tfFileName.clear();
+//        }
         if (filesDragAndDrop.equals("Drop files here!")) {
             return;
         } else {
@@ -423,7 +422,7 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
 
     public void DelSelectedItemInListView(ActionEvent actionEvent) {
 
-       // if (simpleListView.getSelectionModel().getSelectedItem()!=null) {
+        if (simpleListView.getSelectionModel().getSelectedItem()!=null) {
             System.out.println("del tryth= " + simpleListView.getSelectionModel().getSelectedItem());
             File file = new File("client/client_storage/" + simpleListView.getSelectionModel().getSelectedItem());
             if( file.delete()){
@@ -432,14 +431,14 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
                 System.out.println("Файла" +  simpleListView.getSelectionModel().getSelectedItem() + " не обнаружен");
             }
              refreshLocalFilesList();
-       // } //else {
-//            Alert alert = new Alert(Alert.AlertType.NONE, "Select the file to download.", ButtonType.OK);
-//            // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
-//            Optional<ButtonType> result = alert.showAndWait();
-//            if (result.get().getText().equals("OK")) {
-//                System.out.println("You clicked OK");
-//            }
-        //}
+        } else {
+            Alert alert = new Alert(Alert.AlertType.NONE, "Select the file from to delete in the folder.", ButtonType.OK);
+            // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get().getText().equals("OK")) {
+                System.out.println("You clicked OK");
+            }
+        }
     }
 
     public void changeBindedBoolean(ActionEvent actionEvent) {
@@ -454,12 +453,11 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
         String simplListClient2 = initializeFocus2(simpleListView2);
         System.out.println("select2 mode= " + simplListClient2);
 //TODO // download
-
        // if (simpleListView2.getSelectionModel().getSelectedItem()!=null) { //  &
             // Network.sendMsg(new Command("Up",simpleListView2.getSelectionModel().getSelectedItem()));
             System.out.println("get22= " + simpleListView2.getSelectionModel().getSelectedItem());
             Network.sendMsg(new FileRequest(simpleListView2.getSelectionModel().getSelectedItem()));
-            //filesDragAndDrop.setText("Drop files here!");
+            filesDragAndDrop.setText("Drop files here!");
             System.out.println("transfer OK");
 //        } // UpLoad from Server
 //        else {
@@ -479,7 +477,7 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
             System.out.println("del tryth= " + simpleListView2.getSelectionModel().getSelectedItem());
             Network.sendMsg(new Command("del",simpleListView2.getSelectionModel().getSelectedItem()));
         } else {
-            Alert alert = new Alert(Alert.AlertType.NONE, "Select the file to download.", ButtonType.OK);
+            Alert alert = new Alert(Alert.AlertType.NONE, "Select the file from to delete on the Cloud.", ButtonType.OK);
             // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
             Optional<ButtonType> result = alert.showAndWait();
             if (result.get().getText().equals("OK")) {

@@ -53,10 +53,8 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                 FileMessage fm = (FileMessage) msg;
                 Files.write(Paths.get("server/server_storage/" + fm.getFilename()),
                         fm.getData(), StandardOpenOption.CREATE);
-              //  refreshLocalFilesList();
                 refreshServerFilesList();
-                FileList fl = new FileList(filesList);
-                ctx.writeAndFlush(fl);
+                sendFileList(ctx);
                 System.out.println("Obj OK " + fm);
                 }
             if (msg instanceof Command) {
@@ -81,9 +79,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                     }
                     System.out.println("Del List OK ");
                 }
-                FileList fl = new FileList(filesList);
-                ctx.writeAndFlush(fl);
-                System.out.println("tranfer List OK " + fl);
+                sendFileList(ctx);
             }
 
             if (msg == null) {
@@ -105,20 +101,6 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
         ctx.close();
     }
 
-//    public void refreshLocalFilesList() {
-//        updateUI(() -> {
-//            try {
-//                filesList.getItems().clear();
-//                Files.list(Paths.get("server/server_storage/")).
-//                        map(p -> p.getFileName().toString()).
-//                        forEach(o -> filesList.getItems().add(o));
-//                System.out.println("listLen= " + filesList.getItems().size());
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        });
-//    }
-
     public void refreshServerFilesList() {
 
         File dir = new File("server/server_storage/"); //path указывает на директорию
@@ -128,6 +110,16 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
         for (String file : filesList) {
             System.out.println(file);
         }
+    }
+
+    public void sendFileList (ChannelHandlerContext ctx){
+        try {
+            FileList fl = new FileList(filesList);
+            ctx.writeAndFlush(fl);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("tranfer List OK ");
     }
 
     public static void updateUI(Runnable r) {

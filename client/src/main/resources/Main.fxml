@@ -41,11 +41,11 @@
                     text="[X] CLOSE"/>
         </HBox>
 
-        <HBox>
-            <TextField fx:id="tfFileName" focusTraversable="false"
-                       promptText="Укажите имя файла на сервере, который хотите скачать" HBox.hgrow="ALWAYS" />
-            <Button onAction="#pressOnDownloadBtn" text="Скачать" />
-        </HBox>
+        <!--<HBox>-->
+            <!--<TextField fx:id="tfFileName" focusTraversable="false"-->
+                       <!--promptText="Укажите имя файла на сервере, который хотите скачать" HBox.hgrow="ALWAYS" />-->
+            <!--<Button onAction="#pressOnDownloadBtn" text="Скачать" />-->
+        <!--</HBox>-->
 
         <ListView fx:id="customCellListView"/>
         <TableView fx:id="personsTable"/>
