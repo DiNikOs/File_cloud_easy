@@ -57,7 +57,7 @@
            <VBox>
                <Button maxWidth="Infinity" fx:id="btnShowSelectedElement" onAction="#printSelectedItemInListView" text="Upload file" />
                <Button maxWidth="Infinity" fx:id="btnDelSelectedElement" onAction="#DelSelectedItemInListView" text="Delete file" />
-               <Button maxWidth="Infinity" onAction="#changeBindedBoolean" text="Вкл/выкл       " />
+               <Button maxWidth="Infinity" onAction="#changeBindedBoolean" text="Вкл/выкл" />
            </VBox>
             <VBox>
                 <Label text="Server"></Label>

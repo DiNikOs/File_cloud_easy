@@ -4,6 +4,10 @@ import com.dinikos.file_cloud_easy.common.*;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -57,6 +61,7 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
 
     @FXML
     ListView<String> simpleListView2;
+
     @FXML
     TableView<Person> personsTable;
 
@@ -82,11 +87,10 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
     Socket socket;
     DataInputStream in;
     DataOutputStream out;
+    StringBuffer sb;
 
     final String IP_ADRESS = "localhost";
     final int PORT = 8189;
-
-
 
     // Выполняется при старте контроллера
     // Для работы этого метода необходимо чтобы контроллер реализовал интерфейс Initializable
@@ -100,7 +104,7 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
         btnShowSelectedElement.disableProperty().bind(btnDisabled);
         btnShowSelectedElement.setPrefWidth(50);
         btnDelSelectedElement.setPrefWidth(50);
-
+        sb = new StringBuffer();
        // String auth = "/auth Java";
 
         Network.start();
@@ -118,15 +122,12 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
                         refreshLocalFilesList();
                     }
                     if (am instanceof FileList) {
+                        FileList fl = (FileList) am;
+
                         //TODO // transfer
-                       FileList fl = (FileList) am;
-                        System.out.println("Fl= " + fl);
-                        simpleListView2.getItems().clear();
                         System.out.println("FlList= " + fl.getFileList());
                         System.out.println("FlListSize= " + fl.getFileList().size());
-                        for (int i = 0; i < fl.getFileList().size(); i++) {
-                            simpleListView2.getItems().add(fl.get(i));
-                        }
+                        refreshServerFilesList(fl);
                     }
                 }
             } catch (ClassNotFoundException | IOException e) {
@@ -137,7 +138,11 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
         });
         t.setDaemon(true);
         t.start();
-        refreshLocalFilesList();
+        //refreshLocalFilesList();
+
+        initializeFocus(simpleListView);
+        initializeFocus2(simpleListView2);
+        System.out.println("==INITIALIZE==");
     }
 
     public void pressOnDownloadBtn(ActionEvent actionEvent) {
@@ -145,6 +150,24 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
             Network.sendMsg(new FileRequest(tfFileName.getText()));
             tfFileName.clear();
             System.out.println("DownloadBtn");
+        }
+
+        String simplListClient2 = initializeFocus(simpleListView2);
+        System.out.println("select2 mode= " + simplListClient2);
+        if (simplListClient2!=null) {
+            // Network.sendMsg(new Command("Up",simpleListView2.getSelectionModel().getSelectedItem()));
+            System.out.println("get22= " + simplListClient2);
+            Network.sendMsg(new FileRequest(simplListClient2));
+            filesDragAndDrop.setText("Drop files here!");
+            System.out.println("transfer OK");
+        } // UpLoad from Server
+        else {
+            Alert alert = new Alert(Alert.AlertType.NONE, "Select the file to download from.", ButtonType.OK);
+            // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get().getText().equals("OK")) {
+                System.out.println("You clicked OK");
+            }
         }
     }
 
@@ -159,7 +182,9 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
             }
             tfFileName.clear();
         }
-        if (!filesDragAndDrop.equals("Drop files here!")) {
+        if (filesDragAndDrop.equals("Drop files here!")) {
+            return;
+        } else {
             try {
                 Network.sendMsg(new FileMessage(Paths.get(filesDragAndDrop.getText().trim())));
             } catch (IOException e) {
@@ -174,27 +199,26 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
         updateUI(() -> {
             try {
                 simpleListView.getItems().clear();
-               // simpleListView2.getItems().clear();
                 Files.list(Paths.get("client/client_storage")).
                         map(p -> p.getFileName().toString()).
                         forEach(o -> simpleListView.getItems().add(o));
                 Network.sendMsg(new Command("getServerList", ""));
-
-                for (int i = 0; i < simpleListView.getItems().size(); i++) {
-                    System.out.println(simpleListView.getItems().get(i));
-                }
-               // simpleListView.getSelectionModel().;
+                System.out.println("simpleList= " + simpleListView.getItems().toString());
                 int lenList = simpleListView.getItems().size();
                 System.out.println("len list= " + lenList);
-//                for (int i = 0; i < lenList; i++) {
-//                    simpleListView2.getItems().add(simpleListView.getItems().get(i));
-//                }
-//                simpleListView2.add(simpleListView.get)
-//                simpleListView2.getItems().addAll(simpleListView);
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        });
+    }
+
+    public void refreshServerFilesList(FileList f) {
+        updateUI(() -> {
+            simpleListView2.getItems().clear();
+            simpleListView2.getItems().addAll(f.getFileList());
+//            for (int i = 0; i < f.getFileList().size(); i++) {
+//                simpleListView2.getItems().add(f.get(i));
+//            }
         });
     }
 
@@ -296,6 +320,49 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
         });
     }
 
+    public String initializeFocus(ListView<String> simpleList) {
+        refreshLocalFilesList();
+        MultipleSelectionModel<String> langsSelectionModel = simpleList.getSelectionModel();
+        // устанавливаем слушатель для отслеживания изменений
+        langsSelectionModel.selectedItemProperty().addListener(new ChangeListener<String>(){
+
+            public void changed(ObservableValue<? extends String> changed, String oldValue, String newValue){
+                System.out.println("SelectedNew: " + newValue);
+                System.out.println("SelectedOld: " + oldValue);
+                // selectedLbl.setText("Selected: " + newValue);
+                sb.setLength(0);
+                System.out.println("sb= " + sb);
+                sb.append(oldValue);
+                System.out.println("sb2= " + sb);
+                simpleList.getSelectionModel().getSelectedItem();
+
+            }
+        });
+        return sb.toString();
+    }
+
+    public String initializeFocus2(ListView<String> simpleList) {
+        refreshLocalFilesList();
+        MultipleSelectionModel<String> langsSelectionModel = simpleList.getSelectionModel();
+        // устанавливаем слушатель для отслеживания изменений
+        langsSelectionModel.selectedItemProperty().addListener(new ChangeListener<String>(){
+
+            public void changed(ObservableValue<? extends String> changed, String oldValue, String newValue){
+                System.out.println("SelectedNew: " + newValue);
+                System.out.println("SelectedOld: " + oldValue);
+                // selectedLbl.setText("Selected: " + newValue);
+                sb.setLength(0);
+                System.out.println("sb= " + sb);
+                sb.append(newValue);
+                System.out.println("sb2= " + sb);
+                simpleList.getSelectionModel().getSelectedItem();
+
+            }
+        });
+        return sb.toString();
+    }
+
+
     public void btnExit(ActionEvent actionEvent) {
         System.exit(0);
     }
@@ -314,44 +381,37 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
     }
 
     public void printSelectedItemInListView(ActionEvent actionEvent) {
+        System.out.println("==BTN_UPLOAD==");
+        System.out.println("action= " + actionEvent.toString());
 
-        if (simpleListView.getSelectionModel().getSelectedItem()!=null) {
+
+
+        String simplListClient = initializeFocus2(simpleListView);
+        System.out.println("select1 mode= " + simplListClient);
+
+//TODO // download
+        if (simplListClient!=null) {
+
+            System.out.println("init1= " + simplListClient);
             try {
-                Network.sendMsg(new FileMessage(Paths.get("client/client_storage/" + simpleListView.getSelectionModel().getSelectedItem())));
-                filesDragAndDrop.setText("Drop files here!");
+                //System.out.println("get12= " + simplListClient);
+                Network.sendMsg(new FileMessage(Paths.get("client/client_storage/" + simplListClient)));
+                //filesDragAndDrop.setText("Drop files here!");
             } catch (IOException e) {
                 e.printStackTrace();
             }
             System.out.println(simpleListView.getSelectionModel().getSelectedItem());
-        } else {
-            Alert alert = new Alert(Alert.AlertType.NONE, "Select the file to download.", ButtonType.OK);
+        }
+//        // UpLoad from Server
+        else {
+            Alert alert = new Alert(Alert.AlertType.NONE, "Select the file to download from.", ButtonType.OK);
             // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
             Optional<ButtonType> result = alert.showAndWait();
             if (result.get().getText().equals("OK")) {
                 System.out.println("You clicked OK");
             }
         }
-        // UpLoad from Server
-        if (simpleListView2.getSelectionModel().getSelectedItem()!=null) {
-            try {
-               // Network.sendMsg(new Command("Up",simpleListView2.getSelectionModel().getSelectedItem()));
-                Network.sendMsg(new FileMessage(Paths.get("client/client_storage/" + simpleListView2.getSelectionModel().getSelectedItem())));
-                filesDragAndDrop.setText("Drop files here!");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            System.out.println(simpleListView.getSelectionModel().getSelectedItem());
-        } else {
-            Alert alert = new Alert(Alert.AlertType.NONE, "Select the file to download.", ButtonType.OK);
-            // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
-            Optional<ButtonType> result = alert.showAndWait();
-            if (result.get().getText().equals("OK")) {
-                System.out.println("You clicked OK");
-            }
-        }
-
-
-
+        System.out.println("==BTN_UPLOAD_END==" + "\n");
     }
 
     public void DelSelectedItemInListView(ActionEvent actionEvent) {
@@ -360,11 +420,11 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
             System.out.println("del tryth= " + simpleListView.getSelectionModel().getSelectedItem());
             File file = new File("client/client_storage/" + simpleListView.getSelectionModel().getSelectedItem());
             if( file.delete()){
-                System.out.println("client/client_storage/" + simpleListView.getSelectionModel().getSelectedItem() + " файл удален");
+                System.out.println("client/client_storage/" + initializeFocus(simpleListView) + " файл удален");
             } else {
-                System.out.println("Файла" +  simpleListView.getSelectionModel().getSelectedItem() + " не обнаружен");
+                System.out.println("Файла" +  initializeFocus(simpleListView) + " не обнаружен");
             }
-            refreshLocalFilesList();
+           // refreshLocalFilesList();
         } else {
             Alert alert = new Alert(Alert.AlertType.NONE, "Select the file to download.", ButtonType.OK);
             // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
