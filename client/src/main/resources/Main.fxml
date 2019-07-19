@@ -63,6 +63,11 @@
                 <Label text="Server"></Label>
                 <ListView fx:id="simpleListView2"/>
             </VBox>
+            <VBox>
+                <Button maxWidth="Infinity" fx:id="btnShowSelectedElement2" onAction="#printSelectedItemInListView2" text="Upload file" />
+                <Button maxWidth="Infinity" fx:id="btnDelSelectedElement2" onAction="#DelSelectedItemInListView2" text="Delete file" />
+                <Button maxWidth="Infinity" onAction="#changeBindedBoolean2" text="Вкл/выкл" />
+            </VBox>
         </HBox>
 
         <Label fx:id="filesDragAndDrop" alignment="CENTER" prefHeight="300" prefWidth="400"

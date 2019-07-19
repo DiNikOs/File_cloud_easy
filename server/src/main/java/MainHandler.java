@@ -55,32 +55,40 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                         fm.getData(), StandardOpenOption.CREATE);
               //  refreshLocalFilesList();
                 refreshServerFilesList();
+                FileList fl = new FileList(filesList);
+                ctx.writeAndFlush(fl);
                 System.out.println("Obj OK " + fm);
                 }
             if (msg instanceof Command) {
                 String cmd = ((Command) msg).getCommand();
-                refreshServerFilesList();
-                System.out.println("listLen= " + filesList.size());
+                String cmdDel = ((Command) msg).getFilename();
+
                 if (cmd.equals("getServerList")){
-                    FileList fl = new FileList(filesList);
-
-                    ctx.writeAndFlush(fl);
-                    System.out.println("tranfer List OK " + fl);
+                    refreshServerFilesList();
+                    System.out.println("listLen= " + filesList.size());
+                    System.out.println("get ServerList OK ");
                 }
-                if (cmd.equals("Del")){
-                    FileList fl = new FileList(filesList);
-
-                    ctx.writeAndFlush(fl);
-                    System.out.println("Del List OK " + fl);
+                if (cmd.equals("del")){
+                    if (cmdDel!=null) {
+                        System.out.println("del tryth= " + cmdDel);
+                        File file = new File("server/server_storage/" + cmdDel);
+                        if( file.delete()){
+                            System.out.println("server/server_storage/" + cmdDel + " файл удален");
+                        } else {
+                            System.out.println("Файла" +  cmdDel + " не обнаружен");
+                        }
+                        refreshServerFilesList();
+                    }
+                    System.out.println("Del List OK ");
                 }
-
-
+                FileList fl = new FileList(filesList);
+                ctx.writeAndFlush(fl);
+                System.out.println("tranfer List OK " + fl);
             }
 
             if (msg == null) {
                 return;
             }
-
         } finally {
             ReferenceCountUtil.release(msg);
         }
