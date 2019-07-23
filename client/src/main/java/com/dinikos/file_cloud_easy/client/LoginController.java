@@ -4,9 +4,7 @@ import com.dinikos.file_cloud_easy.common.Command;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.ListView;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 
 import java.io.DataInputStream;
@@ -14,6 +12,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.sql.DriverManager;
+import java.util.Optional;
 
 public class LoginController {
     @FXML
@@ -31,6 +30,8 @@ public class LoginController {
 
 
     public int id;
+    public int id2;
+    public int id3;
 
     private boolean isAuthorized;
 
@@ -64,19 +65,20 @@ public class LoginController {
 
     public void auth(ActionEvent actionEvent) {
         System.out.println(login.getText() + " " + password.getText());
-        System.out.println("id = " + id);
+        System.out.println("authId = " + id);
         globParent.getScene().getWindow().hide();
 
-        if(socket == null || socket.isClosed()) {
-            connect();
-        }
-
-        if  (login.getText().trim().isEmpty() || password.getText().trim().isEmpty()) {
+        if  (!login.getText().trim().isEmpty() || !password.getText().trim().isEmpty()) {
            // out.writeUTF("/auth " + "null" + " " + "null");
-            Network.sendMsg(new Command("/auth null null", ""));
+            Network.sendMsg(new Command("/auth ",  login.getText() + " " +  password.getText()));
         } else {
-            //out.writeUTF("/auth " + login.getText() + " " + password.getText());
-            Network.sendMsg(new Command("/auth ",  login.getText() + password.getText()));
+
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Field is empty! Enter login and password", ButtonType.OK);
+            // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get().getText().equals("OK")) {
+                System.out.println("You clicked OK");
+            }
         }
         login.clear();
         password.clear();
@@ -84,11 +86,22 @@ public class LoginController {
 
     public void sign(ActionEvent actionEvent) {
         System.out.println(login.getText() + " " + password.getText());
-        System.out.println("id = " + id);
+        System.out.println("signId = " + id2);
         globParent.getScene().getWindow().hide();
 
+        if  (!login.getText().trim().isEmpty() || !password.getText().trim().isEmpty()) {
 
-
+            Network.sendMsg(new Command("/sign ",  login.getText() + " " +  password.getText()));
+        } else {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Field is empty! Enter login and password", ButtonType.OK);
+            // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get().getText().equals("OK")) {
+                System.out.println("You clicked OK");
+            }
+        }
+        login.clear();
+        password.clear();
 
 //        CREATE TABLE user (
 //                id       INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -99,90 +112,14 @@ public class LoginController {
 
     }
 
-    public void connect() {
+    public void disconnect(ActionEvent actionEvent) {
+        System.out.println(login.getText() + " " + password.getText());
+        System.out.println("disconId = " + id3);
+        globParent.getScene().getWindow().hide();
 
-        try {
-            socket = new Socket(IP_ADRESS, PORT);
-            in = new DataInputStream(socket.getInputStream());
-            out = new DataOutputStream(socket.getOutputStream());
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        while (true) {
-                            String str = in.readUTF();
-                            if (str.startsWith("/authok")) {
-                                setAuthorized(true);
-                              //  textArea.clear();
-                                break;
-                            } else if (str.equals("/closeAuth")) {
-                               // textArea.appendText("Таймаут подключения 120 сек" + "\n");
-                                out.writeUTF("/end2");
-                                break;
-                            } else {
-                               // textArea.appendText(str + "\n");
-                            }
-                        }
-
-                        while (true) {
-                            String str = in.readUTF();
-                            if(str.startsWith("/")) {
-
-                                if (str.equals("/serverclosed"))  {
-                                    // closeApp();
-                                    break;
-                                }
-                                if (str.startsWith("/clientlist ")) {
-                                    String[] tokens = str.split(" ");
-                                    Platform.runLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-//                                            MiniStage miniStage = new MiniStage();
-//                                            miniStage.show();
-
-                                            clientList.getItems().clear();
-                                            for (int i = 1; i < tokens.length; i++) {
-                                                clientList.getItems().add(tokens[i]);
-                                            }
-                                        }
-                                    });
-                                }
-                            } else {
-                               // textArea.appendText(str + "\n");
-                            }
-                        }
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } finally {
-                        try {
-                            socket.close();
-                           // textArea.appendText("Сокет закрыт" + "\n");
-                            System.out.println("Сокет закрыт" + "\n");
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        setAuthorized(false);
-                    }
-                }
-            }).start();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void sendMsg() {
-        try {
-          //  out.writeUTF(textField.getText());
-            out.writeUTF("send MSG");
-           // textField.clear();
-           // textField.requestFocus();
-            System.out.println("send MSG");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Network.sendMsg(new Command("/end ",  login.getText() + " " +  password.getText()));
+        login.clear();
+        password.clear();
     }
 
 }

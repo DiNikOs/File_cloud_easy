@@ -40,13 +40,6 @@
                      -fx-border-radius: 0 20 0 0; -fx-background-radius: 0 20 0 0; -fx-text-fill: #fff;"
                     text="[X] CLOSE"/>
         </HBox>
-
-        <!--<HBox>-->
-            <!--<TextField fx:id="tfFileName" focusTraversable="false"-->
-                       <!--promptText="Укажите имя файла на сервере, который хотите скачать" HBox.hgrow="ALWAYS" />-->
-            <!--<Button onAction="#pressOnDownloadBtn" text="Скачать" />-->
-        <!--</HBox>-->
-
         <ListView fx:id="customCellListView"/>
         <TableView fx:id="personsTable"/>
         <HBox>
@@ -55,31 +48,19 @@
                 <ListView fx:id="simpleListView"/>
             </VBox>
            <VBox>
-               <Button maxWidth="Infinity" fx:id="btnShowSelectedElement" onAction="#printSelectedItemInListView" text="Upload file" />
-               <Button maxWidth="Infinity" fx:id="btnDelSelectedElement" onAction="#DelSelectedItemInListView" text="Delete file" />
+               <Button maxWidth="Infinity" fx:id="btnShowSelectedElement" focusTraversable="false" onAction="#printSelectedItemInListView" text="Upload file" />
+               <Button maxWidth="Infinity" fx:id="btnDelSelectedElement" focusTraversable="false"  onAction="#DelSelectedItemInListView" text="Delete file" />
                <Button maxWidth="Infinity" onAction="#changeBindedBoolean" text="Вкл/выкл" />
            </VBox>
             <VBox>
-                <Label text="Server"></Label>
+                <Label text="Cloud"></Label>
                 <ListView fx:id="simpleListView2"/>
-            </VBox>
-            <VBox>
-                <Button maxWidth="Infinity" fx:id="btnShowSelectedElement2" onAction="#printSelectedItemInListView2" text="Upload file" />
-                <Button maxWidth="Infinity" fx:id="btnDelSelectedElement2" onAction="#DelSelectedItemInListView2" text="Delete file" />
-                <Button maxWidth="Infinity" onAction="#changeBindedBoolean2" text="Вкл/выкл" />
             </VBox>
         </HBox>
 
-        <Label fx:id="filesDragAndDrop" alignment="CENTER" prefHeight="300" prefWidth="400"
+        <Label fx:id="filesDragAndDrop" alignment="CENTER" prefHeight="300" prefWidth="Infinity"
                style="-fx-background-color: #fff" text="Drop files here!" wrapText="true"/>
         <HBox alignment="CENTER">
-            <Button onAction="#btnUpFile" text="Upload file">
-                <HBox.margin>
-                    <Insets right="5.0"/>
-                </HBox.margin>
-            </Button>
-
-
             <Button onAction="#btnShowAlert" text="Show Alert">
                 <HBox.margin>
                     <Insets right="5.0"/>

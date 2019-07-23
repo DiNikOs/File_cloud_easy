@@ -22,6 +22,14 @@
          <Insets top="10.0" />
       </VBox.margin></Button>
 
+    <Button onAction="#disconnect" prefWidth="150" text="Disconnect">
+        <opaqueInsets>
+            <Insets />
+        </opaqueInsets>
+        <VBox.margin>
+            <Insets top="10.0" />
+        </VBox.margin></Button>
+
     <Button onAction="#sign" prefWidth="150" text="Sign up">
         <opaqueInsets>
             <Insets />

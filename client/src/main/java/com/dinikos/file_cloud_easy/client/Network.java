@@ -13,6 +13,8 @@ public class Network {
     private static Socket socket;
     private static ObjectEncoderOutputStream outMsg;
     private static ObjectDecoderInputStream inMsg;
+    //private int PORT;
+    final  static int PORT = 8189;
 
 
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -21,7 +23,7 @@ public class Network {
 
     public static void start() {
         try { //(Socket socket = new Socket("localhost", 8189))
-            socket = new Socket("localhost", 8189);
+            socket = new Socket("localhost", PORT);
             outMsg = new ObjectEncoderOutputStream(socket.getOutputStream());
            // outMsg.flush();
             inMsg = new ObjectDecoderInputStream(socket.getInputStream(), 100 * 1024 * 1024);

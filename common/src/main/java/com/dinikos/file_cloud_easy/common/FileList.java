@@ -38,7 +38,4 @@ public class FileList extends AbstractMessage {
         this.filesList = filesList;
     }
 
-//    public FileList(ListView<String> filesList) throws IOException {
-//        this.filesList = filesList;
-//    }
 }
