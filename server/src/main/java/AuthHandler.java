@@ -34,63 +34,64 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        String cmd = ((Command) msg).getCommand();
-        String input = ""; //
-        input = (String)(input + msg);
-        //ctx.pipeline().addLast(new MainHandler(username));//username
-        // /auth user1
+
+
         if (authOk) {
             ctx.fireChannelRead(msg);
             return;
         }
 
         if (msg instanceof Command) {
+            String cmd = ((Command) msg).getCommand();
             System.out.println("received CMD");
-
-            String cmdDel = ((Command) msg).getFilename();
+            System.out.println("cmd= " + cmd);
+          //  String cmdDel = ((Command) msg).getFilename();
             String[] tokens = cmd.split(" ");
-            key = tokens[0];
-            login = tokens[1];
-            pass = tokens[2];
-            if (key.equals("/auth")){
-                if (getNickByLoginAndPass(login, pass)) {
-                    //server.subscribe(this);
-                    authOk = true;
-                    ctx.pipeline().addLast(new MainHandler(login));
-                    System.out.println("Auth Ok! ");
-                } else {
+            if (tokens.length>1) {
+                key = tokens[0];
+                login = tokens[1];
+                pass = tokens[2];
+                if (key.equals("/auth")) {
+                    if (getNickByLoginAndPass(login, pass)) {
+                        //server.subscribe(this);
+                        authOk = true;
+                        ctx.pipeline().addLast(new MainHandler(login));
+                        System.out.println("Auth Ok! ");
+                        ctx.writeAndFlush(new Command("/authOk",""));
+                    } else {
+
+                    }
+                }
+                if (key.equals("/sign")) {
+                    try {
+                        stmt.executeUpdate("INSERT INTO " + NAME_TABLE +
+                                " (login, passwd) " +
+                                "VALUES ('" + login + "', '" + pass + "');");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        System.out.println("Sign Ok! ");
+                    }
+                }
+                if (key.equals("/end")) {
+                    if (getNickByLoginAndPass(login, pass)) {
+                        //server.subscribe(this);
+                        authOk = false;
+                        //ctx.pipeline().remove(login);
+                        //  remove(new MainHandler(login));
+                        System.out.println("disconect! ");
+                    } else {
+
+                    }
 
                 }
             }
-            if (key.equals("/sign")) {
-                try {
-                    stmt.executeUpdate("INSERT INTO " + NAME_TABLE +
-                            " (login, passwd) " +
-                            "VALUES ('" + login + "', '" + pass + "');");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    System.out.println("Sign Ok! ");
-                }
-            }
-            if (key.equals("/end")){
-                if (getNickByLoginAndPass(login, pass)) {
-                    //server.subscribe(this);
-                    authOk = false;
-                    ctx.pipeline().remove(login);
-                          //  remove(new MainHandler(login));
-                    System.out.println("disconect! ");
-                } else {
-
-                }
-
-            }
-          //  sendFileList(ctx);
+          //  sendFileList(ctx, msg);
         }
     }
 
 
-//    public void sendFileList (ChannelHandlerContext ctx){
+//    public void sendFileList (ChannelHandlerContext ctx, Object msg){
 //        try {
 //            FileList fl = new FileList(filesList);
 //            ctx.writeAndFlush(fl);
@@ -108,14 +109,21 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     }
 
     public boolean getNickByLoginAndPass(String login, String pass) {
-
+        ResultSet dat = null;
+        System.out.println("l/p= " + login + "/" + pass);
         try {
-            ResultSet rs = stmt.executeQuery(String.format("SELECT nick FROM "  + NAME_TABLE + " login = '%s' and passwd = '%s'", login, pass));
+          //  ResultSet rs = stmt.executeQuery(String.format("SELECT nick FROM "  + NAME_TABLE + "where" + " login = '%s' and passwd = '%s'", login, pass));
+            String sql = String.format("SELECT nick FROM user where " +
+                    "login = '%s' and passwd = '%s'", login, pass);
+            ResultSet rs = stmt.executeQuery(sql);
             if(rs.next()) {
+                System.out.println("nick= " + rs.getString("nick"));
                 return true;
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            System.out.println("rs= " + dat);
         }
         return false;
     }

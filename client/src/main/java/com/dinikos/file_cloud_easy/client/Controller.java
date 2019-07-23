@@ -131,6 +131,13 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
                         System.out.println("FlListSize= " + fl.getFileList().size());
                         refreshServerFilesList(fl);
                     }
+                    if (am instanceof Command) {
+                        String cmd = ((Command) am).getCommand();
+                        if (cmd.equals("/authOk")){
+                            Network.sendMsg(new Command("/getList", ""));
+                        }
+
+                    }
                 }
             } catch (ClassNotFoundException | IOException e) {
                 e.printStackTrace();
@@ -151,7 +158,8 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
     public void refreshLocalFilesList() {
         updateUI(() -> {
             try {
-                simpleListView.getItems().clear();
+                //simpleListView.getItems().clear();
+                setClearListUser();
                 Files.list(Paths.get("client/client_storage")).
                         map(p -> p.getFileName().toString()).
                         forEach(o -> simpleListView.getItems().add(o));
@@ -167,7 +175,8 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
 
     public void refreshServerFilesList(FileList f) {
         updateUI(() -> {
-            simpleListView2.getItems().clear();
+            //simpleListView2.getItems().clear();
+            setClearListCloud();
             simpleListView2.getItems().addAll(f.getFileList());
         });
     }
@@ -347,7 +356,7 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
     }
 
     public void DelSelectedItemInListView(ActionEvent actionEvent) {
-
+        System.out.println("===DelBTN===");
         if (simpleListView.isFocused()) {
             File file = new File("client/client_storage/" + initializeFocus(simpleListView, 1));
             if( file.delete()){
@@ -358,6 +367,7 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
              refreshLocalFilesList();
         } else if (simpleListView2.isFocused()) {
             Network.sendMsg(new Command("/delFile",initializeFocus(simpleListView2,0)));
+            System.out.println("SendMsgDel");
         } else {
             Alert alert = new Alert(Alert.AlertType.NONE, "Select the file from to delete.", ButtonType.OK);
             // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
@@ -367,9 +377,18 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
             }
         }
         filesDragAndDrop.setText("Drop files here!");
+        System.out.println("===DelBTNstop===");
     }
 
     public void changeBindedBoolean(ActionEvent actionEvent) {
         btnDisabled.set(!btnDisabled.get());
+    }
+
+    public void setClearListUser() {
+        simpleListView.getItems().clear();
+    }
+
+    public void setClearListCloud() {
+        simpleListView2.getItems().clear();
     }
 }

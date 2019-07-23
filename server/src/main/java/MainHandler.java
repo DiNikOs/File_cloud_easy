@@ -32,17 +32,19 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
     public MainHandler(String username) { // String username
         this.username =  username;
         System.out.println("MainHandler start");
+        refreshServerFilesList();
     }
 
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         System.out.println("Client connected...");
+
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        final File dir1 = new File(username);
+        final File dir1 = new File("server/" + username);
         if(!dir1.exists()) {
             if(dir1.mkdir()) {
                 System.out.println("Kaтaлoг " + dir1.getAbsolutePath()
@@ -55,6 +57,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
             System.out.println("Kaтaлoг " + dir1.getAbsolutePath()
                     + " yжe cyщecтвyeт.");
         }
+
 
         try {
             if (msg instanceof FileRequest) {
@@ -77,6 +80,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                 System.out.println("Obj OK " + fm);
                 }
             if (msg instanceof Command) {
+                System.out.println("SendCMD");
                 String cmd = ((Command) msg).getCommand();
                 String cmdDel = ((Command) msg).getFilename();
 
@@ -90,6 +94,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                     System.out.println("get ServerList OK ");
                 }
                 if (cmd.equals("/delFile")){
+                    System.out.println("SendCmdDel= " + cmd);
                     if (cmdDel!=null) {
                         System.out.println("del tryth= " + cmdDel);
                         File file = new File("server/" + username + "/" + cmdDel);
@@ -103,7 +108,12 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                     }
                     System.out.println("Del List OK ");
                 }
-                sendFileList(ctx);
+                if (cmd.equals("/end")) {
+                    ctx.close();
+                        //  remove(new MainHandler(login));
+                        System.out.println("disconect! ");
+                    }
+                    sendFileList(ctx);
             }
 
             if (msg == null) {

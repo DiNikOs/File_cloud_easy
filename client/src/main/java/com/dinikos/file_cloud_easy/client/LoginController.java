@@ -34,13 +34,13 @@ public class LoginController {
     public int id3;
 
     private boolean isAuthorized;
-
-    Socket socket;
-    DataInputStream in;
-    DataOutputStream out;
-
-    final String IP_ADRESS = "localhost";
-    final int PORT = 8189;
+//
+//    Socket socket;
+//    DataInputStream in;
+//    DataOutputStream out;
+//
+//    final String IP_ADRESS = "localhost";
+//    final int PORT = 8189;
 
     public Controller backController;
 
@@ -70,7 +70,7 @@ public class LoginController {
 
         if  (!login.getText().trim().isEmpty() || !password.getText().trim().isEmpty()) {
            // out.writeUTF("/auth " + "null" + " " + "null");
-            Network.sendMsg(new Command("/auth ",  login.getText() + " " +  password.getText()));
+            Network.sendMsg(new Command("/auth " + login.getText() + " " +  password.getText(), ""  ));
         } else {
 
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Field is empty! Enter login and password", ButtonType.OK);
@@ -91,7 +91,7 @@ public class LoginController {
 
         if  (!login.getText().trim().isEmpty() || !password.getText().trim().isEmpty()) {
 
-            Network.sendMsg(new Command("/sign ",  login.getText() + " " +  password.getText()));
+            Network.sendMsg(new Command("/sign " + login.getText() + " " +  password.getText(), ""  ));
         } else {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Field is empty! Enter login and password", ButtonType.OK);
             // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
@@ -117,7 +117,8 @@ public class LoginController {
         System.out.println("disconId = " + id3);
         globParent.getScene().getWindow().hide();
 
-        Network.sendMsg(new Command("/end ",  login.getText() + " " +  password.getText()));
+        Network.sendMsg(new Command("/end " + login.getText() + " " +  password.getText(), ""  ));
+        backController.setClearListCloud();
         login.clear();
         password.clear();
     }
