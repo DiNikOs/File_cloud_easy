@@ -10,13 +10,8 @@ import java.util.List;
 public class FileList extends AbstractMessage {
 
     private String filename;
-    //private ListView<String> filesList;
     private List<String> filesList;
     private byte[] data;
-
-//    public ListView<String> getFileList() {
-//        return filesList;
-//    }
 
     public List<String> getFileList() {
         return filesList;
