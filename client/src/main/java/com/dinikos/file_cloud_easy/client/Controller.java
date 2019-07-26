@@ -29,10 +29,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.net.URL;
 import java.nio.file.Files;
@@ -53,8 +50,8 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
 //    TextField tfFileName;
 //
 
-    @FXML
-    ListView<Person> customCellListView;
+//    @FXML
+//    ListView<Person> customCellListView;
 
     @FXML
     ListView<String> simpleListView;
@@ -62,8 +59,8 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
     @FXML
     ListView<String> simpleListView2;
 
-    @FXML
-    TableView<Person> personsTable;
+//    @FXML
+//    TableView<Person> personsTable;
 
     @FXML
     Label filesDragAndDrop, labelDragWindow;
@@ -80,17 +77,11 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
     @FXML
     Button btnDelSelectedElement;
 
-    SimpleBooleanProperty btnDisabled = new SimpleBooleanProperty(false);
-
     private boolean isAuthorized;
 
     Socket socket;
     DataInputStream in;
     DataOutputStream out;
-    StringBuffer sb, sb2;
-    //StringBuffer sb2;
-    final int BTNSIZE = 50;
-
 
     final String IP_ADRESS = "localhost";
 
@@ -102,42 +93,50 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
 
         initializeDragAndDropLabel();
         initializeWindowDragAndDropLabel();
-        initializeSceneStyle();
-       // initializeSimpleListView();
-        btnShowSelectedElement.disableProperty().bind(btnDisabled);
-        btnShowSelectedElement.setPrefWidth(BTNSIZE);
-        btnDelSelectedElement.setPrefWidth(BTNSIZE);
-        sb = new StringBuffer();
-       // String auth = "/auth Java";
+        //btnShowSelectedElement.disableProperty().bind(btnDisabled);
+        btnShowSelectedElement.setPrefSize(120,60);
+        btnDelSelectedElement.setPrefSize(120,60);
+        isAuthorized = false;
 
         Network.start();
-      //
-//        outMsg.writeObject("/auth java");
-//        outMsg.writeObject("Hello server");
+        Network.sendMsg(new Command("/InitClient", ""));
         Thread t = new Thread(() -> {
             try {
                 while (true) {
                     AbstractMessage am = Network.readObject();
-                    if (am instanceof FileMessage) {
-                        FileMessage fm = (FileMessage) am;
-                        Files.write(Paths.get("client/client_storage/" + fm.getFilename()),
-                                fm.getData(), StandardOpenOption.CREATE);
-                        refreshLocalFilesList();
-                    }
-                    if (am instanceof FileList) {
-                        FileList fl = (FileList) am;
-                        //TODO // transfer
-                        System.out.println("FlList= " + fl.getFileList());
-                        System.out.println("FlListSize= " + fl.getFileList().size());
-                        refreshServerFilesList(fl);
-                    }
-                    if (am instanceof Command) {
-                        String cmd = ((Command) am).getCommand();
-                        if (cmd.equals("/authOk")){
-                            Network.sendMsg(new Command("/getList", ""));
+                      // }
+                        if (isAuthorized) {
+                            System.out.println("Auturiz=true");
+                            if (am instanceof FileMessage) {
+                                FileMessage fm = (FileMessage) am;
+                                Files.write(Paths.get("client/client_storage/" + fm.getFilename()),
+                                        fm.getData(), StandardOpenOption.CREATE);
+                                refreshLocalFilesList();
+                            }
+                            if (am instanceof FileList) {
+                                FileList fl = (FileList) am;
+                                System.out.println("FlList= " + fl.getFileList());
+                                if (fl.getFileList()!=null) {
+                                    System.out.println("FlListSize= " + fl.getFileList().size());
+                                    refreshServerFilesList(fl);
+                                }
+                            }
+                        }  else {
+                            setClearListCloud();
                         }
-
-                    }
+                    if (am instanceof Command) {
+                            String cmd = ((Command) am).getCommand();
+                            System.out.println("putCMD= " + cmd);
+                            if (cmd.equals("/authOk")){
+                                isAuthorized = true;
+                                Network.sendMsg(new Command("/getList", ""));
+                            }
+                            if (cmd.equals("/end")){
+                                Network.sendMsg(new Command("/AuthNOK", ""));
+                                isAuthorized = false;
+                                System.out.println("endController");
+                            }
+                        }
                 }
             } catch (ClassNotFoundException | IOException e) {
                 e.printStackTrace();
@@ -148,23 +147,18 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
         t.setDaemon(true);
         t.start();
         refreshLocalFilesList();
-
-        initializeFocus(simpleListView,1);
-        initializeFocus(simpleListView2,0);
+//        initializeFocus(simpleListView,1);
+//        initializeFocus(simpleListView2,0);
         System.out.println("==INITIALIZE==");
     }
 
-        //TODO // doto
     public void refreshLocalFilesList() {
         updateUI(() -> {
             try {
-                //simpleListView.getItems().clear();
                 setClearListUser();
                 Files.list(Paths.get("client/client_storage")).
                         map(p -> p.getFileName().toString()).
                         forEach(o -> simpleListView.getItems().add(o));
-                Network.sendMsg(new Command("/getList", ""));
-                System.out.println("simpleList= " + simpleListView.getItems().toString());
                 int lenList = simpleListView.getItems().size();
                 System.out.println("len list= " + lenList);
             } catch (IOException e) {
@@ -175,7 +169,6 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
 
     public void refreshServerFilesList(FileList f) {
         updateUI(() -> {
-            //simpleListView2.getItems().clear();
             setClearListCloud();
             simpleListView2.getItems().addAll(f.getFileList());
         });
@@ -186,19 +179,6 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
             r.run();
         } else {
             Platform.runLater(r);
-        }
-    }
-
-    // Показывает Alert с возможностью нажатия одной из двух кнопок
-    public void btnShowAlert(ActionEvent actionEvent) {
-        // Создаем Alert, указываем текст и кнопки, которые на нем должны быть
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Do you agree?", ButtonType.OK, ButtonType.CANCEL);
-        // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.get().getText().equals("OK")) {
-            System.out.println("You clicked OK");
-        } else if (result.get().getText().equals("Cancel")) {
-            System.out.println("You clicked Cancel");
         }
     }
 
@@ -225,7 +205,7 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
         });
     }
 
-    public void btnShowModal(ActionEvent actionEvent) {
+    public void btnShowAuth(ActionEvent actionEvent) {
         try {
             Stage stage = new Stage();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Login.fxml"));
@@ -268,57 +248,34 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
         });
     }
 
-    public void initializeSceneStyle() {
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                mainStackPane.setPadding(new Insets(20, 20, 20, 20));
-                mainStackPane.getChildren().get(0).setEffect(new DropShadow(15, Color.BLACK));
-            }
-        });
-    }
-
-    public String initializeFocus(ListView<String> simpleList, int part) {
-        refreshLocalFilesList();
-        MultipleSelectionModel<String> langsSelectionModel = simpleList.getSelectionModel();
-        // устанавливаем слушатель для отслеживания изменений
-        langsSelectionModel.selectedItemProperty().addListener(new ChangeListener<String>(){
-            public void changed(ObservableValue<? extends String> changed, String oldValue, String newValue){
-                System.out.println("SelectedNew: " + newValue);
-                System.out.println("SelectedOld: " + oldValue);
-                // selectedLbl.setText("Selected: " + newValue);
-                sb.setLength(0);
-                System.out.println("sb= " + sb);
-                if (part==0) sb.append(newValue);
-                if (part==1) sb.append(oldValue);
-                System.out.println("sb2= " + sb);
-            }
-        });
-        if (sb.equals("")) return null;
-        return sb.toString();
-    }
+//    public String initializeFocus(ListView<String> simpleList, int part) {
+//        refreshLocalFilesList();
+//        MultipleSelectionModel<String> langsSelectionModel = simpleList.getSelectionModel();
+//        // устанавливаем слушатель для отслеживания изменений
+//        langsSelectionModel.selectedItemProperty().addListener(new ChangeListener<String>(){
+//            public void changed(ObservableValue<? extends String> changed, String oldValue, String newValue){
+//                System.out.println("SelectedNew: " + newValue);
+//                System.out.println("SelectedOld: " + oldValue);
+//                // selectedLbl.setText("Selected: " + newValue);
+//                sb.setLength(0);
+//                System.out.println("sb= " + sb);
+//                if (part==0) sb.append(newValue);
+//                if (part==1) sb.append(oldValue);
+//                System.out.println("sb2= " + sb);
+//            }
+//        });
+//        if (sb.equals("")) return null;
+//        return sb.toString();
+//    }
 
     public void btnExit(ActionEvent actionEvent) {
+        Network.sendMsg(new Command("/exit",""));
         System.exit(0);
-    }
-
-    public void btnShow2SceneStage(ActionEvent actionEvent) {
-        Parent root = null;
-        try {
-            root = FXMLLoader.load(getClass().getResource("/Scene1.fxml"));
-            Stage stage = new Stage();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.showAndWait();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public void printSelectedItemInListView(ActionEvent actionEvent) {
         System.out.println("==BTN_UPLOAD==");
         System.out.println("action= " + actionEvent.toString());
-//TODO // download
         if (simpleListView.isFocused()) {
             System.out.println("startBTN List1");
             try {
@@ -358,15 +315,17 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
     public void DelSelectedItemInListView(ActionEvent actionEvent) {
         System.out.println("===DelBTN===");
         if (simpleListView.isFocused()) {
-            File file = new File("client/client_storage/" + initializeFocus(simpleListView, 1));
+            File file = new File("client/client_storage/" + simpleListView.getSelectionModel().getSelectedItem());
+            //File file = new File("client/client_storage/" + initializeFocus(simpleListView, 1));
             if( file.delete()){
-                System.out.println("client/client_storage/" + initializeFocus(simpleListView, 1) + " файл удален");
+                System.out.println("client/client_storage/" + simpleListView.getSelectionModel().getSelectedItem() + " файл удален");
             } else {
-                System.out.println("Файла" +  initializeFocus(simpleListView, 1) + " не обнаружен");
+                System.out.println("Файла" +  simpleListView.getSelectionModel().getSelectedItem() + " не обнаружен");
             }
              refreshLocalFilesList();
         } else if (simpleListView2.isFocused()) {
-            Network.sendMsg(new Command("/delFile",initializeFocus(simpleListView2,0)));
+            //Network.sendMsg(new Command("/delFile",initializeFocus(simpleListView2,0)));
+            Network.sendMsg(new Command("/delFile",simpleListView2.getSelectionModel().getSelectedItem()));
             System.out.println("SendMsgDel");
         } else {
             Alert alert = new Alert(Alert.AlertType.NONE, "Select the file from to delete.", ButtonType.OK);
@@ -380,15 +339,13 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
         System.out.println("===DelBTNstop===");
     }
 
-    public void changeBindedBoolean(ActionEvent actionEvent) {
-        btnDisabled.set(!btnDisabled.get());
-    }
-
     public void setClearListUser() {
         simpleListView.getItems().clear();
+        System.out.println("Clear_User");
     }
 
     public void setClearListCloud() {
         simpleListView2.getItems().clear();
+        System.out.println("Clear_Cloud");
     }
 }

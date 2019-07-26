@@ -27,20 +27,11 @@ public class LoginController {
     @FXML
     ListView<String> clientList;
 
-
-
     public int id;
     public int id2;
     public int id3;
 
     private boolean isAuthorized;
-//
-//    Socket socket;
-//    DataInputStream in;
-//    DataOutputStream out;
-//
-//    final String IP_ADRESS = "localhost";
-//    final int PORT = 8189;
 
     public Controller backController;
 
@@ -64,12 +55,13 @@ public class LoginController {
     }
 
     public void auth(ActionEvent actionEvent) {
+        backController.setClearListCloud();
+
         System.out.println(login.getText() + " " + password.getText());
         System.out.println("authId = " + id);
         globParent.getScene().getWindow().hide();
 
         if  (!login.getText().trim().isEmpty() || !password.getText().trim().isEmpty()) {
-           // out.writeUTF("/auth " + "null" + " " + "null");
             Network.sendMsg(new Command("/auth " + login.getText() + " " +  password.getText(), ""  ));
         } else {
 
@@ -102,25 +94,20 @@ public class LoginController {
         }
         login.clear();
         password.clear();
-
-//        CREATE TABLE user (
-//                id       INTEGER PRIMARY KEY AUTOINCREMENT,
-//                login    TEXT    UNIQUE,
-//                password TEXT,
-//                nickname TEXT    UNIQUE
-//        );
-
     }
 
     public void disconnect(ActionEvent actionEvent) {
-        System.out.println(login.getText() + " " + password.getText());
+        backController.setClearListCloud();
+        System.out.println("discon_data= " + login.getText() + "/" + password.getText());
         System.out.println("disconId = " + id3);
         globParent.getScene().getWindow().hide();
+        new Main();
+        Network.sendMsg(new Command("/end_login", ""  ));
+       // new Controller();
 
-        Network.sendMsg(new Command("/end " + login.getText() + " " +  password.getText(), ""  ));
-        backController.setClearListCloud();
         login.clear();
         password.clear();
+        System.out.println("all_clear");
     }
 
 }

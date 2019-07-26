@@ -2,6 +2,7 @@ package com.dinikos.file_cloud_easy.client;
 
 //import com.flamexander.netty.example.common.AbstractMessage;
 import com.dinikos.file_cloud_easy.common.AbstractMessage;
+import com.dinikos.file_cloud_easy.common.Command;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
 import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
@@ -10,10 +11,9 @@ import java.io.IOException;
 import java.net.Socket;
 
 public class Network {
-    private static Socket socket;
+    protected static Socket socket;
     private static ObjectEncoderOutputStream outMsg;
     private static ObjectDecoderInputStream inMsg;
-    //private int PORT;
     final  static int PORT = 8189;
 
 
@@ -22,10 +22,10 @@ public class Network {
     }
 
     public static void start() {
-        try { //(Socket socket = new Socket("localhost", 8189))
+        try {
             socket = new Socket("localhost", PORT);
             outMsg = new ObjectEncoderOutputStream(socket.getOutputStream());
-           // outMsg.flush();
+            outMsg.flush();
             inMsg = new ObjectDecoderInputStream(socket.getInputStream(), 100 * 1024 * 1024);
 
         } catch (IOException e) {
@@ -65,6 +65,6 @@ public class Network {
 
     public static AbstractMessage readObject() throws ClassNotFoundException, IOException {
         Object obj = inMsg.readObject();
-        return (AbstractMessage) obj;
+            return (AbstractMessage) obj;
     }
 }

@@ -22,7 +22,7 @@ public class Main extends Application {
         primaryStage.initStyle(StageStyle.TRANSPARENT);
         primaryStage.setTitle("File cloud easy Client");
         primaryStage.setResizable(false);
-        Scene scene = new Scene(root, 600, 600);
+        Scene scene = new Scene(root, 600, 500);
         scene.setFill(Color.TRANSPARENT);
         primaryStage.setScene(scene);
         primaryStage.show();

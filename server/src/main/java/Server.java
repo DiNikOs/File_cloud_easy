@@ -33,7 +33,7 @@ public class Server {
                                     new ObjectDecoder(50 * 1024 * 1024, ClassResolvers.cacheDisabled(null)),
                                     new ObjectEncoder(),
                                     new AuthHandler()
-                                    //new MainHandler()//,
+                                   // new MainHandler()//,
                             );
                         }
                     })

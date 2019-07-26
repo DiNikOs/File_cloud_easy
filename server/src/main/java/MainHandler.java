@@ -1,50 +1,43 @@
 
 import com.dinikos.file_cloud_easy.common.*;
-import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
-import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
 import io.netty.util.ReferenceCountUtil;
 import javafx.application.Platform;
-import javafx.scene.control.ListView;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MainHandler extends ChannelInboundHandlerAdapter {
 
-    private String username;
     private String nick;
-    //ListView<String> filesList;
     List<String> filesList;
-    private Server server;
+    File dir1;
 
     public MainHandler(String username) { // String username
-        this.username =  username;
-        System.out.println("MainHandler start");
-        refreshServerFilesList();
+        this.nick =  username;
+        dir1 = null;
+        System.out.println("MainHandler start" + this.nick);
     }
 
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         System.out.println("Client connected...");
-
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        final File dir1 = new File("server/" + username);
+
+        System.out.println("=============server/" + getNick());
+        dir1 = new File("server/" + getNick());
         if(!dir1.exists()) {
             if(dir1.mkdir()) {
                 System.out.println("Kaтaлoг " + dir1.getAbsolutePath()
@@ -58,49 +51,41 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                     + " yжe cyщecтвyeт.");
         }
 
-
         try {
             if (msg instanceof FileRequest) {
                 FileRequest fr = (FileRequest) msg;
-                if (Files.exists(Paths.get("server/" + username + "/" + fr.getFilename()))) {
-                    FileMessage fm = new FileMessage(Paths.get("server/" + username + "/" + fr.getFilename()));
+                if (Files.exists(Paths.get("server/" + getNick() + "/" + fr.getFilename()))) {
+                    FileMessage fm = new FileMessage(Paths.get("server/" + getNick() + "/" + fr.getFilename()));
                     ctx.writeAndFlush(fm);
                     System.out.println("tranfer Obj OK " + fm);
                 }
-
             }
             if (msg instanceof FileMessage) {//
                 FileMessage fm = (FileMessage) msg;
-//                Files.write(Paths.get("server/server_storage/" + fm.getFilename()),
-//                        fm.getData(), StandardOpenOption.CREATE);
-                Files.write(Paths.get("server/" + username + "/" + fm.getFilename()),
+                Files.write(Paths.get("server/" + getNick() + "/" + fm.getFilename()),
                         fm.getData(), StandardOpenOption.CREATE);
                 refreshServerFilesList();
                 sendFileList(ctx);
                 System.out.println("Obj OK " + fm);
                 }
             if (msg instanceof Command) {
-                System.out.println("SendCMD");
                 String cmd = ((Command) msg).getCommand();
                 String cmdDel = ((Command) msg).getFilename();
-
-
-//                String[] tokens = str.split(" ");
-//                String newNick = server.getNickByLoginAndPass(tokens[1], tokens[2]);
-
-                if (cmd.equals("/getList")){
+                System.out.println("SendCMD" + cmd);
+                String[] tokens = cmd.split(" ");
+                String key = tokens[0];
+                if (key.equals("/getList")){
                     refreshServerFilesList();
-                    System.out.println("listLen= " + filesList.size());
+                   // System.out.println("listLen= " + filesList.size());
                     System.out.println("get ServerList OK ");
                 }
-                if (cmd.equals("/delFile")){
+                if (key.equals("/delFile")){
                     System.out.println("SendCmdDel= " + cmd);
                     if (cmdDel!=null) {
                         System.out.println("del tryth= " + cmdDel);
-                        File file = new File("server/" + username + "/" + cmdDel);
-                       // File file = new File("server/server_storage/" + cmdDel);
+                        File file = new File("server/" + getNick() + "/" + cmdDel);
                         if( file.delete()){
-                            System.out.println("server/" + username + "/" + cmdDel + " файл удален");
+                            System.out.println("server/" + getNick() + "/" + cmdDel + " файл удален");
                         } else {
                             System.out.println("Файла" +  cmdDel + " не обнаружен");
                         }
@@ -108,15 +93,18 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                     }
                     System.out.println("Del List OK ");
                 }
-                if (cmd.equals("/end")) {
+                sendFileList(ctx);
+                if (key.equals("/end_login")||key.equals("/exit")) {
+                    final ChannelFuture f = ctx.writeAndFlush(new Command("/end",""));
+                    ctx.fireChannelRead(msg);
+                    f.addListener(ChannelFutureListener.CLOSE);
+                    System.out.println("=========Client disconectMH!=========== ");
                     ctx.close();
-                        //  remove(new MainHandler(login));
-                        System.out.println("disconect! ");
                     }
-                    sendFileList(ctx);
             }
 
             if (msg == null) {
+                System.out.println("msg_Null");
                 return;
             }
         } finally {
@@ -132,19 +120,21 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         cause.printStackTrace();
+        System.out.println("ctx_close_Exception");
         ctx.close();
     }
 
     public void refreshServerFilesList() {
 
-        File dir = new File("server/" + username + "/"); //path указывает на директорию
+        File dir = new File("server/" + getNick() + "/"); //path указывает на директорию
+        System.out.println("server_user= " + getNick());
         //File dir = new File("server/server_storage/"); //path указывает на директорию
         String[] arrFiles = dir.list();
         filesList = Arrays.asList(arrFiles);
         System.out.println("listLen= " + filesList.size());
-        for (String file : filesList) {
-            System.out.println(file);
-        }
+//        for (String file : filesList) {
+//            System.out.println(file);
+//        }
     }
 
     public void sendFileList (ChannelHandlerContext ctx){
@@ -166,7 +156,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
     }
 
     public String getNick() {
-        return nick;
+        return this.nick;
     }
 
     public void sendMsg(ChannelHandlerContext ctx, Object msg) {
