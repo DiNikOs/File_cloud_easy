@@ -38,17 +38,9 @@ public class LoginController {
     public void setAuthorized(boolean isAuthorized) {
         this.isAuthorized = isAuthorized;
         if(!isAuthorized) {
-//            upperPanel.setVisible(true);
-//            upperPanel.setManaged(true);
-//            bottomPanel.setVisible(false);
-//            bottomPanel.setManaged(false);
             clientList.setVisible(false);
             clientList.setManaged(false);
         } else {
-//            upperPanel.setVisible(false);
-//            upperPanel.setManaged(false);
-//            bottomPanel.setVisible(true);
-//            bottomPanel.setManaged(true);
             clientList.setVisible(true);
             clientList.setManaged(true);
         }
