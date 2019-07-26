@@ -45,22 +45,11 @@ import java.util.regex.Pattern;
 
 public class Controller extends ChannelInboundHandlerAdapter implements Initializable {
 
-
-//    @FXML
-//    TextField tfFileName;
-//
-
-//    @FXML
-//    ListView<Person> customCellListView;
-
     @FXML
     ListView<String> simpleListView;
 
     @FXML
     ListView<String> simpleListView2;
-
-//    @FXML
-//    TableView<Person> personsTable;
 
     @FXML
     Label filesDragAndDrop, labelDragWindow;
@@ -79,11 +68,11 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
 
     private boolean isAuthorized;
 
-    Socket socket;
-    DataInputStream in;
-    DataOutputStream out;
-
-    final String IP_ADRESS = "localhost";
+//    Socket socket;
+//    DataInputStream in;
+//    DataOutputStream out;
+//
+//    final String IP_ADRESS = "localhost";
 
 
     // Выполняется при старте контроллера
