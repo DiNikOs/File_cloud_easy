@@ -30,9 +30,11 @@ public class Network {
 
         } catch (IOException e) {
             e.printStackTrace();
-//        } catch (ClassNotFoundException e) {
-//            e.printStackTrace();
         }
+    }
+
+    public static boolean isConnected () {
+        return  !(socket==null || socket.isClosed());
     }
 
     public static void stop() {

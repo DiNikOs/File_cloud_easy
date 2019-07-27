@@ -24,8 +24,8 @@ public class LoginController {
     @FXML
     VBox globParent;
 
-    @FXML
-    ListView<String> clientList;
+//    @FXML
+//    ListView<String> clientList;
 
     public int id;
     public int id2;
@@ -35,16 +35,16 @@ public class LoginController {
 
     public Controller backController;
 
-    public void setAuthorized(boolean isAuthorized) {
-        this.isAuthorized = isAuthorized;
-        if(!isAuthorized) {
-            clientList.setVisible(false);
-            clientList.setManaged(false);
-        } else {
-            clientList.setVisible(true);
-            clientList.setManaged(true);
-        }
-    }
+//    public void setAuthorized(boolean isAuthorized) {
+//        this.isAuthorized = isAuthorized;
+//        if(!isAuthorized) {
+//            clientList.setVisible(false);
+//            clientList.setManaged(false);
+//        } else {
+//            clientList.setVisible(true);
+//            clientList.setManaged(true);
+//        }
+//    }
 
     public void auth(ActionEvent actionEvent) {
         backController.setClearListCloud();
@@ -52,7 +52,7 @@ public class LoginController {
         System.out.println(login.getText() + " " + password.getText());
         System.out.println("authId = " + id);
         globParent.getScene().getWindow().hide();
-
+        backController.connect();
         if  (!login.getText().trim().isEmpty() || !password.getText().trim().isEmpty()) {
             Network.sendMsg(new Command("/auth " + login.getText() + " " +  password.getText(), ""  ));
         } else {
@@ -73,9 +73,13 @@ public class LoginController {
         System.out.println("signId = " + id2);
         globParent.getScene().getWindow().hide();
 
+
         if  (!login.getText().trim().isEmpty() || !password.getText().trim().isEmpty()) {
 
             Network.sendMsg(new Command("/sign " + login.getText() + " " +  password.getText(), ""  ));
+            System.out.println("/sign " + login.getText() + " " +  password.getText());
+            backController.setClearListCloud();
+            backController.connect();
         } else {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Field is empty! Enter login and password", ButtonType.OK);
             // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
@@ -93,9 +97,7 @@ public class LoginController {
         System.out.println("discon_data= " + login.getText() + "/" + password.getText());
         System.out.println("disconId = " + id3);
         globParent.getScene().getWindow().hide();
-        new Main();
         Network.sendMsg(new Command("/end_login", ""  ));
-       // new Controller();
 
         login.clear();
         password.clear();
