@@ -31,20 +31,7 @@ public class LoginController {
     public int id2;
     public int id3;
 
-    private boolean isAuthorized;
-
     public Controller backController;
-
-//    public void setAuthorized(boolean isAuthorized) {
-//        this.isAuthorized = isAuthorized;
-//        if(!isAuthorized) {
-//            clientList.setVisible(false);
-//            clientList.setManaged(false);
-//        } else {
-//            clientList.setVisible(true);
-//            clientList.setManaged(true);
-//        }
-//    }
 
     public void auth(ActionEvent actionEvent) {
         backController.setClearListCloud();
@@ -56,9 +43,7 @@ public class LoginController {
         if  (!login.getText().trim().isEmpty() || !password.getText().trim().isEmpty()) {
             Network.sendMsg(new Command("/auth " + login.getText() + " " +  password.getText(), ""  ));
         } else {
-
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Field is empty! Enter login and password", ButtonType.OK);
-            // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
             Optional<ButtonType> result = alert.showAndWait();
             if (result.get().getText().equals("OK")) {
                 System.out.println("You clicked OK");
@@ -66,6 +51,9 @@ public class LoginController {
         }
         login.clear();
         password.clear();
+        if (backController.isAuthorized) {
+            backController.labelAutorizeNOK.setText("Autorize!");
+        }
     }
 
     public void sign(ActionEvent actionEvent) {
@@ -97,8 +85,10 @@ public class LoginController {
         System.out.println("discon_data= " + login.getText() + "/" + password.getText());
         System.out.println("disconId = " + id3);
         globParent.getScene().getWindow().hide();
-        Network.sendMsg(new Command("/end_login", ""  ));
-
+        if (backController.isAuthorized) {
+            Network.sendMsg(new Command("/end_login", ""));
+            backController.labelAutorizeNOK.setText("!Autorize");
+        }
         login.clear();
         password.clear();
         System.out.println("all_clear");

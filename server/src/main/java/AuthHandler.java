@@ -49,6 +49,9 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
             if (tokens.length > 0) {
                 key = tokens[0];
                 System.out.println("isAuth key CMD" + key);
+                if (key.equals("/init")) {
+                    System.out.println("Client connect! ");
+                }
                 if (key.equals("/end_login")||key.equals("/sign")) {
                     authOk = false;
                     ctx.writeAndFlush(new Command("/exit",""));
@@ -61,12 +64,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                     ctx.fireChannelRead(msg);
                     System.out.println("Client close! ");
                 }
-//                if (key.equals("/sign")) {
-//                    authOk = false;
-//                    ctx.writeAndFlush(new Command("/exit",""));
-//                    ctx.fireChannelRead(msg);
-//                    System.out.println("Client signUp! ");
-//                }
+
             }
         }
 
@@ -96,7 +94,8 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                         ctx.fireChannelRead(msg);
                         System.out.println("Client Auth Ok! ");
                     } else {
-
+                        ctx.writeAndFlush(new Command("/authNOK",""));
+                        System.out.println("send NOK");
                     }
                 } else if (key.equals("/sign")) {
                     try {

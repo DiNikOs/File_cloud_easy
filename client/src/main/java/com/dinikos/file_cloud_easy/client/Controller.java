@@ -52,7 +52,7 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
     ListView<String> simpleListView2;
 
     @FXML
-    Label filesDragAndDrop, labelDragWindow;
+    Label filesDragAndDrop, labelDragWindow,labelAutorizeNOK;//  labelAutorizeOK,
 
     @FXML
     VBox mainVBox;
@@ -66,7 +66,7 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
     @FXML
     Button btnDelSelectedElement;
 
-    private boolean isAuthorized;
+    protected boolean isAuthorized;
 
     // Выполняется при старте контроллера
     // Для работы этого метода необходимо чтобы контроллер реализовал интерфейс Initializable
@@ -74,6 +74,8 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
     public void initialize(URL location, ResourceBundle resources) {
 
         initializeDragAndDropLabel();
+        labelAutorizeNOK.setVisible(true);
+        //labelAutorizeOK.setVisible(false);
         initializeWindowDragAndDropLabel();
         btnShowSelectedElement.setPrefSize(120,60);
         btnDelSelectedElement.setPrefSize(120,60);
@@ -88,7 +90,7 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
             return;
         }
         Network.start();
-        Network.sendMsg(new Command("/InitClient", ""));
+        Network.sendMsg(new Command("/init", ""));
         Thread t = new Thread(() -> {
             try {
                 while (true) {
@@ -112,6 +114,7 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
                         }
                     }  else {
                         setClearListCloud();
+
                     }
                     if (am instanceof Command) {
                         String cmd = ((Command) am).getCommand();
@@ -122,11 +125,17 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
                         if (cmd.equals("/authOk")){
                             isAuthorized = true;
                         }
+                        if (cmd.equals("/authNOK")){
+                            getAlert ();
+                            System.out.println("**authNOK**");
+                           // break;
+                        }
                         if (cmd.equals("/end")){
                             Network.sendMsg(new Command("/AuthNOK", ""));
                             isAuthorized = false;
                             System.out.println("endController");
                         }
+                        getLabelAuth (isAuthorized);
                     }
                 }
             } catch (ClassNotFoundException | IOException e) {
@@ -303,6 +312,27 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
         filesDragAndDrop.setText("Drop files here!");
         System.out.println("===DelBTNstop===");
     }
+
+    public void getAlert () {
+        updateUI(() -> {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Login or password not correct!", ButtonType.OK);
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get().getText().equals("OK")) {
+                System.out.println("You clicked warn OK");
+            }
+        });
+    }
+
+    public void getLabelAuth (boolean auth) {
+        updateUI(() -> {
+            if (auth) {
+                labelAutorizeNOK.setText("Autorize!");
+            } else {
+                labelAutorizeNOK.setText("!Autorize");
+            }
+        });
+    }
+
 
     public void setClearListUser() {
         simpleListView.getItems().clear();

@@ -35,10 +35,10 @@
                     <Font name="Arial Bold" size="16.0"/>
                 </font>
             </Label>
-            <Button maxHeight="Infinity" onAction="#btnExit"
+            <Button minHeight="36" maxHeight="50" onAction="#btnExit"
                     style="-fx-background-color: linear-gradient(#3a7cef 0, #0f0de2 38%, #5240f0 60%, #c9d1ff 86%, #3A7CEF 100%);
                      -fx-border-radius: 0 20 0 0; -fx-background-radius: 0 20 0 0; -fx-text-fill: #fff;"
-                    text="[X] CLOSE"/>
+                    text="[X] CLOSE" HBox.hgrow="ALWAYS"/>
         </HBox>
         <!--<ListView fx:id="customCellListView"/>-->
         <!--<TableView fx:id="personsTable"/>-->
@@ -51,9 +51,20 @@
                 </Label>
                 <ListView fx:id="simpleListView" maxHeight="Infinity" maxWidth="Infinity" />
             </VBox>
-           <VBox prefWidth="100" prefHeight="100">
-               <Button maxWidth="Infinity" fx:id="btnShowSelectedElement" focusTraversable="false" onAction="#printSelectedItemInListView" text="Upload file" />
-               <Button maxWidth="Infinity" fx:id="btnDelSelectedElement" focusTraversable="false"  onAction="#DelSelectedItemInListView" text="Delete file" />
+
+           <VBox prefWidth="100" prefHeight="100" alignment="CENTER">
+
+               <VBox prefWidth="Infinity" alignment="CENTER" VBox.vgrow="ALWAYS">
+                   <Button maxWidth="Infinity" fx:id="btnShowSelectedElement" focusTraversable="false" onAction="#printSelectedItemInListView" text="Upload file" />
+                   <Button maxWidth="Infinity" fx:id="btnDelSelectedElement" focusTraversable="false"  onAction="#DelSelectedItemInListView" text="Delete file" />
+               </VBox>
+              <VBox prefWidth="Infinity" alignment="BOTTOM_CENTER" VBox.vgrow="ALWAYS">
+                  <Label fx:id="labelAutorizeNOK"  text="!Autorize"  >
+                      <font>
+                          <Font name="Arial Bold" size="14.0"/>
+                      </font>
+                  </Label>
+              </VBox>
            </VBox>
             <VBox alignment="TOP_RIGHT" prefWidth="260" maxHeight="Infinity">
                 <Label text="Cloud" prefHeight="30" VBox.vgrow="ALWAYS">
