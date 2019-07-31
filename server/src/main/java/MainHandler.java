@@ -21,7 +21,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
     List<String> filesList;
     File dir1;
 
-    public MainHandler(String username) { // String username
+    public MainHandler(String username) {
         this.nick =  username;
         dir1 = null;
         System.out.println("MainHandler start" + this.nick);
@@ -38,19 +38,18 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         System.out.println("nick= " + nick);
-        System.out.println("=============server/" + getNick());
         dir1 = new File("server/" + getNick());
         if(!dir1.exists()) {
             if(dir1.mkdir()) {
-                System.out.println("Kaтaлoг " + dir1.getAbsolutePath()
-                        + " ycпeшнo coздaн.");
+                System.out.println("directory " + dir1.getAbsolutePath()
+                        + " created.");
             } else {
-                System.out.println("Kaтaлoг " + dir1.getAbsolutePath()
-                        + " coздвть нe yдaлocь.");
+                System.out.println("directory " + dir1.getAbsolutePath()
+                        + " not created.");
             }
         } else {
-            System.out.println("Kaтaлoг " + dir1.getAbsolutePath()
-                    + " yжe cyщecтвyeт.");
+            System.out.println("directory " + dir1.getAbsolutePath()
+                    + " exists.");
         }
 
         try {
@@ -79,31 +78,32 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
             if (msg instanceof Command) {
                 String cmd = ((Command) msg).getCommand();
                 String cmdDel = ((Command) msg).getFilename();
-                System.out.println("SendCMD" + cmd);
+                //System.out.println("SendCMD" + cmd);
                 String[] tokens = cmd.split(" ");
                 String key = tokens[0];
                 if (key.equals("/auth")){
-                   // System.out.println("listLen= " + filesList.size());
+                    if (!tokens[1].equals(nick)) {
+                        ctx.writeAndFlush(new Command("/needDiscon",""));
+                    }
                     System.out.println("get ServerList OK ");
                 }
                 if (key.equals("/end_login")||key.equals("/exit")) {
                     final ChannelFuture f = ctx.writeAndFlush(new Command("/exit",""));
                     ctx.fireChannelRead(msg);
                     f.addListener(ChannelFutureListener.CLOSE);
-                    System.out.println("=========Client disconectMH!=========== ");
+                    System.out.println("===Client disconectMH!=== ");
                     ctx.close();
                     ctx.pipeline().remove(this);
                     return;
                 }
                 if (key.equals("/delFile")){
-                    System.out.println("SendCmdDel= " + cmd);
+                    //System.out.println("SendCmdDel= " + cmd);
                     if (cmdDel!=null) {
-                        System.out.println("del tryth= " + cmdDel);
                         File file = new File("server/" + getNick() + "/" + cmdDel);
                         if( file.delete()){
-                            System.out.println("server/" + getNick() + "/" + cmdDel + " файл удален");
+                            System.out.println("server/" + getNick() + "/" + cmdDel + " file deleted");
                         } else {
-                            System.out.println("Файла" +  cmdDel + " не обнаружен");
+                            System.out.println("file" +  cmdDel + " not detected");
                         }
                     }
                     System.out.println("Del List OK ");
@@ -135,13 +135,9 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
 
     public void refreshServerFilesList() {
         File dir = new File("server/" + getNick() + "/"); //path указывает на директорию
-        System.out.println("server_user= " + getNick());
+        //System.out.println("server_user= " + getNick());
         String[] arrFiles = dir.list();
         filesList = Arrays.asList(arrFiles);
-        //System.out.println("listLen= " + filesList.size());
-//        for (String file : filesList) {
-//            System.out.println(file);
-//        }
     }
 
     public void sendFileList (ChannelHandlerContext ctx){

@@ -32,66 +32,71 @@ public class LoginController {
     public int id3;
 
     public Controller backController;
+    private final String PASS = "/Empty";
 
     public void auth(ActionEvent actionEvent) {
-        backController.setClearListCloud();
-
         System.out.println(login.getText() + " " + password.getText());
         System.out.println("authId = " + id);
         globParent.getScene().getWindow().hide();
-        backController.connect();
-        if  (!login.getText().trim().isEmpty() || !password.getText().trim().isEmpty()) {
-            Network.sendMsg(new Command("/auth " + login.getText() + " " +  password.getText(), ""  ));
-        } else {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Field is empty! Enter login and password", ButtonType.OK);
-            Optional<ButtonType> result = alert.showAndWait();
-            if (result.get().getText().equals("OK")) {
-                System.out.println("You clicked OK");
-            }
-        }
-        login.clear();
-        password.clear();
-        if (backController.isAuthorized) {
-            backController.labelAutorizeNOK.setText("Autorize!");
-        }
+        getDialog ("/auth ");
     }
 
     public void sign(ActionEvent actionEvent) {
         System.out.println(login.getText() + " " + password.getText());
         System.out.println("signId = " + id2);
         globParent.getScene().getWindow().hide();
-
-
-        if  (!login.getText().trim().isEmpty() || !password.getText().trim().isEmpty()) {
-
-            Network.sendMsg(new Command("/sign " + login.getText() + " " +  password.getText(), ""  ));
-            System.out.println("/sign " + login.getText() + " " +  password.getText());
-            backController.setClearListCloud();
-            backController.connect();
-        } else {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Field is empty! Enter login and password", ButtonType.OK);
-            // showAndWait() показывает Alert и блокирует остальное приложение пока мы не закроем Alert
-            Optional<ButtonType> result = alert.showAndWait();
-            if (result.get().getText().equals("OK")) {
-                System.out.println("You clicked OK");
-            }
-        }
-        login.clear();
-        password.clear();
+        getDialog ("/sign ");
     }
 
     public void disconnect(ActionEvent actionEvent) {
+        if (!Network.isConnected()) {
+            return;
+        }
         backController.setClearListCloud();
-        System.out.println("discon_data= " + login.getText() + "/" + password.getText());
         System.out.println("disconId = " + id3);
         globParent.getScene().getWindow().hide();
         if (backController.isAuthorized) {
             Network.sendMsg(new Command("/end_login", ""));
-            backController.labelAutorizeNOK.setText("!Autorize");
         }
         login.clear();
         password.clear();
         System.out.println("all_clear");
+    }
+
+    public void getDialog (String cmd) {
+        backController.setClearListCloud();
+        backController.connect();
+        if  (!login.getText().trim().isEmpty()) {
+            while (true) {
+                if (password.getText().trim().isEmpty()) {
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Password is empty! Use empty password.", ButtonType.OK, ButtonType.CANCEL);
+                    Optional<ButtonType> result = alert.showAndWait();
+                    System.out.println("ButCan= " + result.get().getText());
+                    if (result.get().getText().equals("OK")) {
+                        System.out.println("You clicked OK");
+                        Network.sendMsg(new Command(cmd + login.getText() + " " + PASS, ""));
+                        break;
+                    }
+                    if (result.get().getText().equals("Cancel")) {
+                        System.out.println("You clicked CANCEL");
+                        backController.getStageAuth();
+                        break;
+                    }
+                } else {
+                    Network.sendMsg(new Command(cmd + login.getText() + " " + password.getText(), ""));
+                    break;
+                }
+            }
+        } else {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Login is empty! Enter login.", ButtonType.OK);
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get().getText().equals("OK")) {
+                System.out.println("You clicked OK");
+            }
+            backController.getStageAuth();
+        }
+        login.clear();
+        password.clear();
     }
 
 }

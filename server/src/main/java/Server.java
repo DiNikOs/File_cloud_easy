@@ -72,9 +72,6 @@ public class Server {
             sb.append(o.getNick() + " ");
         }
         String out = sb.toString();
-//        for(MainHandler o: clients) {
-//            o.sendMsg(out);
-//        }
     }
 
     public void unsubscribe(MainHandler client) {

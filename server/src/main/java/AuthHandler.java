@@ -36,7 +36,6 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         System.out.println("Auth connected...");
-        //key = login = pass = null;
     }
 
     @Override
@@ -48,7 +47,6 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
             String[] tokens = cmd.split(" ");
             if (tokens.length > 0) {
                 key = tokens[0];
-                System.out.println("isAuth key CMD" + key);
                 if (key.equals("/init")) {
                     System.out.println("Client connect! ");
                 }
@@ -56,15 +54,14 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                     authOk = false;
                     ctx.writeAndFlush(new Command("/exit",""));
                     ctx.fireChannelRead(msg);
-                    System.out.println("====disconectAH! ");
+                    System.out.println("disconectAH! ");
                 }
                 if (key.equals("/exit")) {
                     authOk = false;
+                    System.out.println("Client close! ");
                     ctx.pipeline().addLast(new MainHandler(key));
                     ctx.fireChannelRead(msg);
-                    System.out.println("Client close! ");
                 }
-
             }
         }
 
@@ -107,10 +104,10 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                     } finally {
                         System.out.println("Sign Ok! ");
                     }
-                } else if (key.equals("/AuthNOK")) {
-                        authOk = false;
-                        System.out.println("disconectAH====! ");
-                }
+                } //else if (key.equals("/AuthNOK")) {
+//                        authOk = false;
+//                        System.out.println("disconectAH====! ");
+//                }
             }
             System.out.println("AuthHand= " + authOk);
         }

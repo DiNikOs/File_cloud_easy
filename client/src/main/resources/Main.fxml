@@ -59,7 +59,7 @@
                    <Button maxWidth="Infinity" fx:id="btnDelSelectedElement" focusTraversable="false"  onAction="#DelSelectedItemInListView" text="Delete file" />
                </VBox>
               <VBox prefWidth="Infinity" alignment="BOTTOM_CENTER" VBox.vgrow="ALWAYS">
-                  <Label fx:id="labelAutorizeNOK"  text="!Autorize"  >
+                  <Label fx:id="labelAutorizeNOK"  text="!Autorized"  >
                       <font>
                           <Font name="Arial Bold" size="14.0"/>
                       </font>
@@ -86,7 +86,5 @@
             </Button>
         </HBox>
     </VBox>
-    <!--</StackPane>-->
-
 
 </StackPane>
