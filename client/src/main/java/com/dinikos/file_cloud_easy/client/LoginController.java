@@ -3,16 +3,20 @@ package com.dinikos.file_cloud_easy.client;
 import com.dinikos.file_cloud_easy.common.Command;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.URL;
 import java.sql.DriverManager;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
 public class LoginController {
     @FXML
@@ -24,8 +28,6 @@ public class LoginController {
     @FXML
     VBox globParent;
 
-//    @FXML
-//    ListView<String> clientList;
 
     public int id;
     public int id2;
@@ -46,6 +48,13 @@ public class LoginController {
         System.out.println("signId = " + id2);
         globParent.getScene().getWindow().hide();
         getDialog ("/sign ");
+    }
+
+    public void delUser(ActionEvent actionEvent) {
+        System.out.println(login.getText() + " " + password.getText());
+        //System.out.println("removeId = " + id2);
+        globParent.getScene().getWindow().hide();
+        getDialog ("/remove ");
     }
 
     public void disconnect(ActionEvent actionEvent) {

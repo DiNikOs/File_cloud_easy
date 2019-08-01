@@ -6,6 +6,8 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.text.Font?>
 <VBox fx:id="globParent" alignment="center" style="-fx-background-image: url(wall_bubble.png);"
       xmlns="http://javafx.com/javafx/8.0.112-ea" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.dinikos.file_cloud_easy.client.LoginController">
@@ -37,4 +39,14 @@
         <VBox.margin>
             <Insets top="10.0" />
         </VBox.margin></Button>
+
+    <Button onAction="#delUser" prefWidth="150" text="Delete account"  style="-fx-background-color: null">
+        <opaqueInsets>
+            <Insets />
+        </opaqueInsets>
+        <VBox.margin>
+            <Insets top="10.0" />
+        </VBox.margin></Button>
+
+
 </VBox>

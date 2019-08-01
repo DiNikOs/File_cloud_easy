@@ -8,8 +8,10 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
+import java.util.Comparator;
 
 public class AuthHandler extends ChannelInboundHandlerAdapter {
     private boolean authOk = false; // false
@@ -62,6 +64,25 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                     ctx.pipeline().addLast(new MainHandler(key));
                     ctx.fireChannelRead(msg);
                 }
+                if (key.equals("/remove")) {
+                    if (!authOk) { // && getNickByLoginAndPass(tokens[1], tokens[2])
+                        try {
+                            int del = stmt.executeUpdate(
+                                    String.format("DELETE from " + NAME_TABLE +
+                                            " WHERE login = '%s' and passwd = '%s'", login, pass));
+                            System.out.println("delUser= " + del);
+                            if (del > 0) {
+                                File file = new File("server/" + tokens[1]);
+                                deleteFile(file);
+                                System.out.println("remove Ok! ");
+                            } else System.out.println("not Remove!");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+
+                        }
+                    } else  ctx.writeAndFlush(new Command("/needDiscon",""));
+                }
             }
         }
 
@@ -104,10 +125,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                     } finally {
                         System.out.println("Sign Ok! ");
                     }
-                } //else if (key.equals("/AuthNOK")) {
-//                        authOk = false;
-//                        System.out.println("disconectAH====! ");
-//                }
+                }
             }
             System.out.println("AuthHand= " + authOk);
         }
@@ -143,6 +161,15 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void deleteFile(File element) {
+        if (element.isDirectory()) {
+            for (File sub : element.listFiles()) {
+                deleteFile(sub);
+            }
+        }
+        element.delete();
     }
 
 }
