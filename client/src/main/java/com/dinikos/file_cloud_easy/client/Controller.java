@@ -98,7 +98,7 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
                     AbstractMessage am = Network.readObject();
                     if (am instanceof Command) {
                         String cmd = ((Command) am).getCommand();
-                        System.out.println("putCMD= " + cmd);
+                       // System.out.println("putCMD= " + cmd);
                         if (cmd.equals("/exit")) {
                             isAuthorized = false;
                             getLabelAuth (isAuthorized);
@@ -106,6 +106,7 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
                         }
                         if (cmd.equals("/authOk")){
                             isAuthorized = true;
+                            System.out.println("**authOK**");
                         }
                         if (cmd.equals("/signOK")){
                             getAlert ("/signOK");
@@ -140,9 +141,9 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
                         }
                         if (am instanceof FileList) {
                             FileList fl = (FileList) am;
-                            System.out.println("FlList= " + fl.getFileList());
+                            //System.out.println("FlList= " + fl.getFileList());
                             if (fl.getFileList()!=null) {
-                                System.out.println("FlListSize= " + fl.getFileList().size());
+                                //System.out.println("FlListSize= " + fl.getFileList().size());
                                 refreshServerFilesList(fl);
                             }
                         }

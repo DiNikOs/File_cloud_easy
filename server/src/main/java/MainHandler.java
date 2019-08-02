@@ -5,7 +5,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
-import javafx.application.Platform;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,11 +18,11 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
 
     private String nick;
     List<String> filesList;
-    File dir1;
+    File dir;
 
     public MainHandler(String username) {
         this.nick =  username;
-        dir1 = null;
+        dir = null;
         System.out.println("MainHandler start" + this.nick);
     }
 
@@ -38,32 +37,29 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         System.out.println("nick= " + nick);
-        dir1 = new File("server/" + getNick());
-        if(!dir1.exists()) {
-            if(dir1.mkdir()) {
-                System.out.println("directory " + dir1.getAbsolutePath()
-                        + " created.");
+        dir = new File("server/" + nick);
+        if(!dir.exists()) {
+            if(dir.mkdir()) {
+                System.out.println("directory " + dir.getAbsolutePath() + " created.");
             } else {
-                System.out.println("directory " + dir1.getAbsolutePath()
-                        + " not created.");
+                System.out.println("directory " + dir.getAbsolutePath() + " not created.");
             }
         } else {
-            System.out.println("directory " + dir1.getAbsolutePath()
-                    + " exists.");
+            System.out.println("directory " + dir.getAbsolutePath() + " exists.");
         }
 
         try {
             if (msg instanceof FileRequest) {
                 FileRequest fr = (FileRequest) msg;
-                if (Files.exists(Paths.get("server/" + getNick() + "/" + fr.getFilename()))) {
-                    FileMessage fm = new FileMessage(Paths.get("server/" + getNick() + "/" + fr.getFilename()));
+                if (Files.exists(Paths.get("server/" + nick + "/" + fr.getFilename()))) {
+                    FileMessage fm = new FileMessage(Paths.get("server/" + nick + "/" + fr.getFilename()));
                     ctx.writeAndFlush(fm);
                     System.out.println("tranfer Obj OK " + fm);
                 }
             }
             if (msg instanceof FileMessage) {//
                 FileMessage fm = (FileMessage) msg;
-                Files.write(Paths.get("server/" + getNick() + "/" + fm.getFilename()),
+                Files.write(Paths.get("server/" + nick + "/" + fm.getFilename()),
                         fm.getData(), StandardOpenOption.CREATE);
                 refreshServerFilesList();
                 sendFileList(ctx);
@@ -79,7 +75,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                     if (!tokens[1].equals(nick)) {
                         ctx.writeAndFlush(new Command("/needDiscon",""));
                     }
-                    System.out.println("get ServerList OK ");
+                    //System.out.println("get ServerList OK ");
                 }
                 if (key.equals("/end_login")||key.equals("/exit")) {
                     final ChannelFuture f = ctx.writeAndFlush(new Command("/exit",""));
@@ -92,9 +88,9 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                 }
                 if (key.equals("/delFile")){
                     if (cmdDel!=null) {
-                        File file = new File("server/" + getNick() + "/" + cmdDel);
+                        File file = new File("server/" + nick + "/" + cmdDel);
                         if( file.delete()){
-                            System.out.println("server/" + getNick() + "/" + cmdDel + " file deleted");
+                            System.out.println("server/" + nick + "/" + cmdDel + " file deleted");
                         } else {
                             System.out.println("file" +  cmdDel + " not detected");
                         }
@@ -127,7 +123,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
     }
 
     public void refreshServerFilesList() {
-        File dir = new File("server/" + getNick() + "/"); //path указывает на директорию
+        File dir = new File("server/" + nick + "/"); //path указывает на директорию
         //System.out.println("server_user= " + getNick());
         String[] arrFiles = dir.list();
         filesList = Arrays.asList(arrFiles);
@@ -143,19 +139,8 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
         System.out.println("tranfer List OK ");
     }
 
-    public static void updateUI(Runnable r) {
-        if (Platform.isFxApplicationThread()) {
-            r.run();
-        } else {
-            Platform.runLater(r);
-        }
-    }
-
     public String getNick() {
         return this.nick;
     }
 
-    public void sendMsg(ChannelHandlerContext ctx, Object msg) {
-        ctx.writeAndFlush(msg);
-    }
 }
