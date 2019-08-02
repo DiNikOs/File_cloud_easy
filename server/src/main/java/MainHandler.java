@@ -53,12 +53,6 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
         }
 
         try {
-            if (nick.equals("exit")) {
-                ctx.close();
-                ctx.pipeline().remove(this);
-                return;
-            }
-
             if (msg instanceof FileRequest) {
                 FileRequest fr = (FileRequest) msg;
                 if (Files.exists(Paths.get("server/" + getNick() + "/" + fr.getFilename()))) {
@@ -90,14 +84,13 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                 if (key.equals("/end_login")||key.equals("/exit")) {
                     final ChannelFuture f = ctx.writeAndFlush(new Command("/exit",""));
                     ctx.fireChannelRead(msg);
-                    f.addListener(ChannelFutureListener.CLOSE);
                     System.out.println("===Client disconectMH!=== ");
+                    f.addListener(ChannelFutureListener.CLOSE);
                     ctx.close();
                     ctx.pipeline().remove(this);
                     return;
                 }
                 if (key.equals("/delFile")){
-                    //System.out.println("SendCmdDel= " + cmd);
                     if (cmdDel!=null) {
                         File file = new File("server/" + getNick() + "/" + cmdDel);
                         if( file.delete()){

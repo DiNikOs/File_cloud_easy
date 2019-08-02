@@ -52,7 +52,7 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
     ListView<String> simpleListView2;
 
     @FXML
-    Label filesDragAndDrop, labelDragWindow,labelAutorizeNOK;
+    Label filesDragAndDrop, labelDragWindow, labelAutorizeNOK;
 
     @FXML
     VBox mainVBox;
@@ -106,6 +106,18 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
                         }
                         if (cmd.equals("/authOk")){
                             isAuthorized = true;
+                        }
+                        if (cmd.equals("/signOK")){
+                            getAlert ("/signOK");
+                            System.out.println("**signOK**");
+                        }
+                        if (cmd.equals("/signNOK")){
+                            getAlert ("/signNOK");
+                            System.out.println("**signNOK**");
+                        }
+                        if (cmd.equals("/delOK")){
+                            getAlert ("/delOK");
+                            System.out.println("**delOK**");
                         }
                         if (cmd.equals("/authNOK")){
                             getAlert ("/log");
@@ -254,15 +266,14 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
     }
 
     public void printSelectedItemInListView(ActionEvent actionEvent) {
-        if (!Network.isConnected()) {
-            return;
-        }
         System.out.println("==BTN_UPLOAD==");
-        System.out.println("action= " + actionEvent.toString());
         if (simpleListView.isFocused()) {
-            System.out.println("startBTN List1");
+           // System.out.println("startBTN List1");
             if (!isAuthorized) {
                 getAlert ("/up");
+            }
+            if (!Network.isConnected()) {
+                return;
             }
             try {
                 Network.sendMsg(new FileMessage(Paths.get("client/client_storage/" + simpleListView.getSelectionModel().getSelectedItem())));
@@ -275,7 +286,10 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
             if (!isAuthorized) {
                 getAlert ("/up");
             }
-            System.out.println("startBTN List2");
+           // System.out.println("startBTN List2");
+            if (!Network.isConnected()) {
+                return;
+            }
             Network.sendMsg(new FileRequest(simpleListView2.getSelectionModel().getSelectedItem()));
             filesDragAndDrop.setText("Drop files here!");
             System.out.println("transfer OK");
@@ -296,9 +310,6 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
     }
 
     public void DelSelectedItemInListView(ActionEvent actionEvent) {
-        if (!Network.isConnected()) {
-            return;
-        }
         System.out.println("===DelBTN===");
         if (simpleListView.isFocused()) {
             File file = new File("client/client_storage/" + simpleListView.getSelectionModel().getSelectedItem());
@@ -312,8 +323,11 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
             if (!isAuthorized) {
                 getAlert ("/up");
             }
+            if (!Network.isConnected()) {
+                return;
+            }
             Network.sendMsg(new Command("/delFile",simpleListView2.getSelectionModel().getSelectedItem()));
-            System.out.println("SendMsgDel");
+           // System.out.println("SendMsgDel");
         } else {
             getAlert ("/del");
         }
@@ -334,6 +348,12 @@ public class Controller extends ChannelInboundHandlerAdapter implements Initiali
                 case "/del"     : text.append("Select the file from to delete.");
                                 break;
                 case "/file"    : text.append("Select the file to download.");
+                                break;
+                case "/signOK"  : text.append("User is created.");
+                                break;
+                case "/delOK"   : text.append("User is deleted!");
+                                break;
+                case "/signNOK" : text.append("This login is busy!");
                                 break;
                 default: return;
             }

@@ -2,6 +2,8 @@ import com.dinikos.file_cloud_easy.common.Command;
 import com.dinikos.file_cloud_easy.common.FileList;
 import com.dinikos.file_cloud_easy.common.FileMessage;
 import com.dinikos.file_cloud_easy.common.FileRequest;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -52,7 +54,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                 if (key.equals("/init")) {
                     System.out.println("Client connect! ");
                 }
-                if (key.equals("/end_login")||key.equals("/sign")) {
+                if (key.equals("/end_login")) { //||key.equals("/sign"
                     authOk = false;
                     ctx.writeAndFlush(new Command("/exit",""));
                     ctx.fireChannelRead(msg);
@@ -61,21 +63,32 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                 if (key.equals("/exit")) {
                     authOk = false;
                     System.out.println("Client close! ");
+                    ctx.writeAndFlush(new Command("/exit",""));
                     ctx.pipeline().addLast(new MainHandler(key));
                     ctx.fireChannelRead(msg);
                 }
-                if (key.equals("/remove")) {
-                    if (!authOk) { // && getNickByLoginAndPass(tokens[1], tokens[2])
+                if (key.equals("/remove")&&(tokens.length > 1)) {
+                    login = tokens[1];
+                    pass = tokens[2];
+                    if (!authOk) {
+                        int i = 0;
+                        int del = 0;
                         try {
-                            int del = stmt.executeUpdate(
-                                    String.format("DELETE from " + NAME_TABLE +
-                                            " WHERE login = '%s' and passwd = '%s'", login, pass));
-                            System.out.println("delUser= " + del);
-                            if (del > 0) {
-                                File file = new File("server/" + tokens[1]);
-                                deleteFile(file);
-                                System.out.println("remove Ok! ");
-                            } else System.out.println("not Remove!");
+                            while (i < 3) {
+                                del = stmt.executeUpdate(
+                                        String.format("DELETE from " + NAME_TABLE +
+                                                " WHERE login = '%s' and passwd = '%s'", login, pass));
+                                System.out.println("delUser= " + del);
+                                if (del > 0) {
+                                    File file = new File("server/" + tokens[1]);
+                                    deleteFile(file);
+                                    ctx.writeAndFlush(new Command("/delOK",""));
+                                    System.out.println("remove Ok! ");
+                                    break;
+                                }
+                                i++;
+                            }
+                            if (del == 0) System.out.println("not Remove!");
                         } catch (Exception e) {
                             e.printStackTrace();
                         } finally {
@@ -116,18 +129,25 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                         System.out.println("send NOK");
                     }
                 } else if (key.equals("/sign")) {
+                    int up = 0;
                     try {
-                        stmt.executeUpdate("INSERT INTO " + NAME_TABLE +
+                        up = stmt.executeUpdate("INSERT INTO " + NAME_TABLE +
                                 " (login, passwd) " +
                                 "VALUES ('" + login + "', '" + pass + "');");
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        System.out.println("stm= " + up);
+                        if (up > 0) {
+                            System.out.println("SIGN= " + up);
+                            ctx.writeAndFlush(new Command("/signOK",""));
+                        }
+                    } catch (SQLException e) {
+                        ctx.writeAndFlush(new Command("/signNOK",""));
+                        //e.printStackTrace();
                     } finally {
-                        System.out.println("Sign Ok! ");
+                        //System.out.println("Sign");
                     }
                 }
             }
-            System.out.println("AuthHand= " + authOk);
+            //System.out.println("AuthHand= " + authOk);
         }
     }
 

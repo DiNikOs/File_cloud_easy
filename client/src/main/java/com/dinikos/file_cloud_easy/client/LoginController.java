@@ -52,7 +52,7 @@ public class LoginController {
 
     public void delUser(ActionEvent actionEvent) {
         System.out.println(login.getText() + " " + password.getText());
-        //System.out.println("removeId = " + id2);
+        System.out.println("removeId = " + id2);
         globParent.getScene().getWindow().hide();
         getDialog ("/remove ");
     }
