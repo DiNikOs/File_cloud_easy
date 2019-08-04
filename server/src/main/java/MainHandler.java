@@ -30,7 +30,6 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         System.out.println("Client connected...");
-        refreshServerFilesList();
         sendFileList(ctx);
     }
 
@@ -61,7 +60,6 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                 FileMessage fm = (FileMessage) msg;
                 Files.write(Paths.get("server/" + nick + "/" + fm.getFilename()),
                         fm.getData(), StandardOpenOption.CREATE);
-                refreshServerFilesList();
                 sendFileList(ctx);
                 System.out.println("Obj OK " + fm);
                 }
@@ -97,7 +95,6 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                     }
                     System.out.println("Del List OK ");
                 }
-                refreshServerFilesList();
                 sendFileList(ctx);
             }
 
@@ -122,14 +119,11 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
         ctx.close();
     }
 
-    public void refreshServerFilesList() {
+    public void sendFileList (ChannelHandlerContext ctx){
         File dir = new File("server/" + nick + "/"); //path указывает на директорию
         //System.out.println("server_user= " + getNick());
         String[] arrFiles = dir.list();
         filesList = Arrays.asList(arrFiles);
-    }
-
-    public void sendFileList (ChannelHandlerContext ctx){
         try {
             FileList fl = new FileList(filesList);
             ctx.writeAndFlush(fl);

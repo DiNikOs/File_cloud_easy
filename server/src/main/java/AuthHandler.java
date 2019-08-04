@@ -64,8 +64,8 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                     authOk = false;
                     System.out.println("Client close! ");
                     ctx.writeAndFlush(new Command("/exit",""));
-                    ctx.pipeline().addLast(new MainHandler(key));
-                    ctx.fireChannelRead(msg);
+                    ctx.close();
+                    return;
                 }
                 if (key.equals("/remove")&&(tokens.length > 1)) {
                     login = tokens[1];
