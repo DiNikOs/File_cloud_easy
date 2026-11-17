@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.text.Font?>
+<VBox fx:id="globParent" alignment="center" style="-fx-background-image: url(wall_bubble.png);"
+      xmlns="http://javafx.com/javafx/8.0.112-ea" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.dinikos.file_cloud_easy.client.LoginController">
+    <TextField fx:id="login" maxWidth="150" promptText="Login">
+      <VBox.margin>
+         <Insets bottom="10.0" />
+      </VBox.margin></TextField>
+    <PasswordField fx:id="password" maxWidth="150" promptText="Password" />
+    <Button onAction="#auth" prefWidth="150" text="Authorization">
+      <opaqueInsets>
+         <Insets />
+      </opaqueInsets>
+      <VBox.margin>
+         <Insets top="10.0" />
+      </VBox.margin></Button>
+
+    <Button onAction="#disconnect" prefWidth="150" text="Disconnect">
+        <opaqueInsets>
+            <Insets />
+        </opaqueInsets>
+        <VBox.margin>
+            <Insets top="10.0" />
+        </VBox.margin></Button>
+
+    <Button onAction="#sign" prefWidth="150" text="Sign up">
+        <opaqueInsets>
+            <Insets />
+        </opaqueInsets>
+        <VBox.margin>
+            <Insets top="10.0" />
+        </VBox.margin></Button>
+
+    <Button onAction="#delUser" prefWidth="150" text="Delete account"  style="-fx-background-color: null">
+        <opaqueInsets>
+            <Insets />
+        </opaqueInsets>
+        <VBox.margin>
+            <Insets top="10.0" />
+        </VBox.margin></Button>
+
+
+</VBox>
